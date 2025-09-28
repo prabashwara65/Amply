@@ -68,7 +68,7 @@ namespace Amply.Server
                     ValidateLifetime = true,
                     ValidIssuer = "https://localhost:7269",
                     ValidAudience = "https://localhost:7269",
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("1swek3u4uo2u4a6e")),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("1swek3u4uo2u4a6e1swek3u4uo2u4a6e")),
                     ClockSkew = TimeSpan.Zero
 
                 };
