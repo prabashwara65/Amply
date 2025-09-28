@@ -27,7 +27,7 @@ namespace Amply.Server
             {
                 MongoDbSettings = new MongoDbSettings
                 {
-                    ConnectionString = "",
+                    ConnectionString = "mongodb+srv://hasaragr1920_db_user:EtzPpcxKHTh3RlCk@cluster0.gem4m8c.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0\r\n",
                     DatabaseName = "usersDotNet"
                 },
                 IdentityOptionsAction = options =>
@@ -66,8 +66,8 @@ namespace Amply.Server
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateLifetime = true,
-                    ValidIssuer = "https://localhost:8000",
-                    ValidAudience = "https://localhost:8000",
+                    ValidIssuer = "https://localhost:7269",
+                    ValidAudience = "https://localhost:7269",
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("1swek3u4uo2u4a6e")),
                     ClockSkew = TimeSpan.Zero
 
