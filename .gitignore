@@ -1,0 +1,19 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+out/
+
+# Logs
+*.log
+
+# React build
+client/node_modules/
+client/build/
+
+# Environment files
+*.env
