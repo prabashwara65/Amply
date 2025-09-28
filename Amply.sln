@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36518.9 d17.14
+VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "amply.client", "amply.client\amply.client.esproj", "{7C5ABF49-1D6C-B9D5-2E50-8020F43DC506}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Amply.client", "amply.client\Amply.client.esproj", "{7C5ABF49-1D6C-B9D5-2E50-8020F43DC506}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amply.Server", "Amply.Server\Amply.Server.csproj", "{F9FB8017-FAC8-467F-B5D6-751C5FBC90CE}"
 EndProject
