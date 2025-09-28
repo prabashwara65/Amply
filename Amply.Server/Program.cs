@@ -27,7 +27,7 @@ namespace Amply.Server
             {
                 MongoDbSettings = new MongoDbSettings
                 {
-                    ConnectionString = "mongodb+srv://hasaragr1920_db_user:EtzPpcxKHTh3RlCk@cluster0.gem4m8c.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0\r\n",
+                    ConnectionString = "mongodb+srv://hasaragr1920_db_user:EtzPpcxKHTh3RlCk@cluster0.gem4m8c.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
                     DatabaseName = "usersDotNet"
                 },
                 IdentityOptionsAction = options =>
@@ -74,6 +74,17 @@ namespace Amply.Server
                 };
             });
 
+            // Add CORS policy
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173") // React app URL
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials(); // allow cookies or auth headers if needed
+                });
+            });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -81,6 +92,7 @@ namespace Amply.Server
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
@@ -93,6 +105,9 @@ namespace Amply.Server
             }
 
             app.UseHttpsRedirection();
+
+            // Use CORS
+            app.UseCors("AllowReactApp");
 
             app.UseAuthentication();
 

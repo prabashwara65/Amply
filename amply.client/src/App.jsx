@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Register from "./Pages/Prabashwara/Register";
+import Login from "./Pages/Prabashwara/Login";
+import Dashboard from "./Pages/Prabashwara/Dashboard";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div className='bg-red-500'>
-        HI
-       </div>
-    </>
-  )
+    <Router>
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
