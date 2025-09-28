@@ -18,9 +18,10 @@ namespace Amply.Server.Controllers
         private readonly RoleManager<ApplicationRole> _roleManager;
 
 
-        public AuthenticationController(UserManager<ApplicationUser> userManager)
+        public AuthenticationController(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
 
@@ -48,7 +49,7 @@ namespace Amply.Server.Controllers
             try
             {
                 var userExists = await _userManager.FindByEmailAsync(request.Email);
-                if(userExists == null) return new RegisterResponse { Message = "User already exists", Success= false };
+                if(userExists != null) return new RegisterResponse { Message = "User already exists", Success= false };
 
                 //if no use with that email
                 userExists = new ApplicationUser
@@ -115,8 +116,8 @@ namespace Amply.Server.Controllers
                 var expires = DateTime.Now.AddMinutes(30);
 
                 var token = new JwtSecurityToken(
-                    issuer: "https://localhost:5001",
-                    audience: "https://localhost:5001",
+                    issuer: "https://localhost:7269",
+                    audience: "https://localhost:7269",
                     claims: claims,
                     expires: expires,
                     signingCredentials: creds
