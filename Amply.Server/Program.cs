@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Driver;
 using System.Text;
 
 namespace Amply.Server
@@ -85,6 +86,20 @@ namespace Amply.Server
                           .AllowCredentials(); // allow cookies or auth headers if needed
                 });
             });
+
+            // Register IMongoClient in DI
+            builder.Services.AddSingleton<IMongoClient>(sp =>
+            {
+                return new MongoClient(mongoIdentitiyConfig.MongoDbSettings.ConnectionString);
+            });
+
+            // Optionally register IMongoDatabase for direct use
+            builder.Services.AddSingleton(sp =>
+            {
+                var client = sp.GetRequiredService<IMongoClient>();
+                return client.GetDatabase(mongoIdentitiyConfig.MongoDbSettings.DatabaseName);
+            });
+
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

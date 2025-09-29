@@ -1,6 +1,6 @@
 // src/Pages/Reservation/ReservationList.jsx
 import { useEffect, useState } from "react";
-import { getReservations, deleteReservation } from "../../services/reservationService";
+import { getReservations, deleteReservation } from "../../Servicess/ReservationService/reservationSevice";
 import { Link } from "react-router-dom";
 
 export default function ReservationList() {
