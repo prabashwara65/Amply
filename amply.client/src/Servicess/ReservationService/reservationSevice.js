@@ -1,12 +1,30 @@
-// src/services/authService.js
+// src/services/reservationService.js
 import axios from "axios";
 
-const API_URL = "https://localhost:7269/api/v1/authenticate"; 
+// Base API URL for reservations
+const API_URL = "https://localhost:7269/api/v1/reservations";
 
-export const register = async (data) => {
-  return await axios.post(`${API_URL}/register`, data);
+// Get all reservations
+export const getReservations = async () => {
+  return await axios.get(API_URL);
 };
 
-export const login = async (data) => {
-  return await axios.post(`${API_URL}/login`, data);
+// Get a single reservation by ID
+export const getReservationById = async (id) => {
+  return await axios.get(`${API_URL}/${id}`);
+};
+
+// Create a new reservation
+export const createReservation = async (data) => {
+  return await axios.post(API_URL, data);
+};
+
+// Update an existing reservation
+export const updateReservation = async (id, data) => {
+  return await axios.put(`${API_URL}/${id}`, data);
+};
+
+// Delete a reservation
+export const deleteReservation = async (id) => {
+  return await axios.delete(`${API_URL}/${id}`);
 };
