@@ -1,7 +1,7 @@
 // src/Pages/Reservation/ReservationForm.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createReservation, getReservationById, updateReservation } from "../../services/reservationService";
+import { createReservation, getReservationById, updateReservation } from "../../Servicess/ReservationService/reservationSevice";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
