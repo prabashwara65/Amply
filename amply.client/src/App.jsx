@@ -7,9 +7,16 @@ function App() {
   return (
     <Router>
       <Routes>
+
+        {/* Auth Routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Reservation Routes */}
+        <Route path="/reservations" element={<ReservationList />} />
+        <Route path="/reservation/new" element={<ReservationForm />} />
+        <Route path="/reservation/edit/:id" element={<ReservationForm />} />
       </Routes>
     </Router>
   );
