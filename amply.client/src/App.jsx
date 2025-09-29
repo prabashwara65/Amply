@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Register from "./Pages/Prabashwara/Register";
-import Login from "./Pages/Prabashwara/Login";
-import Dashboard from "./Pages/Prabashwara/Dashboard";
+import Register from "./Pages/Auth/Register";
+import Login from "./Pages/Auth/Login";
+import Dashboard from "./Pages/Auth/Dashboard";
 
 function App() {
   return (
