@@ -1,24 +1,42 @@
 import React, { useState } from "react";
-import { login } from "../../Servicess/authService";
 import { useNavigate } from "react-router-dom";
+import { login } from "../../Servicess/authService";
 
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
     try {
       const res = await login(form);
-      localStorage.setItem("token", res.data.accessToken);
-      localStorage.setItem("email", res.data.email);
+
+      // Save token, email, and role in localStorage
+      const { accessToken, email, role } = res.data;
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("email", email);
+      // role might be empty
+      localStorage.setItem("role", role || ""); 
+
       setMessage("Login Successful");
-      navigate("/dashboard");
+
+      // Redirect based on role
+      if (role === "Backofficer") {
+        navigate("/dashboard");
+      } else if (role === "StationOperator") {
+        navigate("/operator-dashboard");
+      } else {
+        navigate("/"); 
+      }
     } catch (err) {
-      setMessage(err.response?.data || "Invalid credentials");
+      const errorMsg = err.response?.data?.message || "Invalid credentials";
+      setMessage(errorMsg);
     }
   };
 
@@ -52,9 +70,13 @@ export default function Login() {
             Sign In
           </button>
         </form>
+
         {message && (
-          <p className="mt-4 text-center text-red-500">{message}</p>
+          <p className={`mt-4 text-center ${message === "Login Successful" ? "text-green-600" : "text-red-500"}`}>
+            {message}
+          </p>
         )}
+
         <p className="mt-4 text-center text-sm text-gray-500">
           Don't have an account?{" "}
           <span

@@ -6,6 +6,7 @@
         public string AccessToken { get; set; } = string.Empty;
         public String Email { get; set; } = String.Empty;
         public String UserId { get; set; } = String.Empty;
-        public String Message {  get; set; } = String.Empty;
+        public String Message { get; set; } = String.Empty;
+        public string Role { get; set; } = string.Empty; 
     }
 }

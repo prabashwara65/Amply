@@ -15,24 +15,11 @@ namespace Amply.Server.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
 
 
-        public AuthenticationController(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+        public AuthenticationController(UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
-        }
-
-
-        [HttpPost]
-        [Route("roles/add")]
-        public async Task<IActionResult> CreateRole([FromBody] CreateRoleRequest request)
-        {
-            var appRole = new ApplicationRole { Name = request.Role };
-            var createRole = await _roleManager.CreateAsync(appRole);
-
-            return Ok(new { message = "role created succesfully" });
         }
 
         [HttpPost]
@@ -103,7 +90,8 @@ namespace Amply.Server.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, string.IsNullOrEmpty(user.Role) ? "" : user.Role)
 
 
             };
@@ -129,7 +117,9 @@ namespace Amply.Server.Controllers
                     Message = "Login Successful",
                     Email = user?.Email,
                     Success = true,
-                    UserId = user?.Id.ToString()
+                    UserId = user?.Id.ToString(),
+                    // send role to frontend
+                    Role = user?.Role
                 };
             }
             catch(Exception ex)
