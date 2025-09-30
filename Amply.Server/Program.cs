@@ -46,10 +46,9 @@ namespace Amply.Server
                 }
             };
 
-            builder.Services.ConfigureMongoDbIdentity<ApplicationUser, ApplicationRole, Guid>(mongoIdentitiyConfig)
+            builder.Services.ConfigureMongoDbIdentityUserOnly<ApplicationUser,  Guid>(mongoIdentitiyConfig)
                 .AddUserManager <UserManager< ApplicationUser>>()
                 .AddSignInManager<SignInManager<ApplicationUser>>()
-                .AddRoleManager<RoleManager<ApplicationRole>>()
                 .AddDefaultTokenProviders();
 
             //JWT Auth
