@@ -90,7 +90,8 @@ namespace Amply.Server.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, string.IsNullOrEmpty(user.Role) ? "" : user.Role)
 
 
             };
@@ -116,7 +117,9 @@ namespace Amply.Server.Controllers
                     Message = "Login Successful",
                     Email = user?.Email,
                     Success = true,
-                    UserId = user?.Id.ToString()
+                    UserId = user?.Id.ToString(),
+                    // send role to frontend
+                    Role = user?.Role
                 };
             }
             catch(Exception ex)
