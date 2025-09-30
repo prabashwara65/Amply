@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
     const email = localStorage.getItem("email"); 
@@ -14,6 +15,9 @@ export default function Dashboard() {
                         <div className="hidden md:flex space-x-4">
                             <a href="#" className="text-gray-700 hover:text-blue-600">
                                 Home
+                            </a>
+                            <a href="/reservations" className="text-gray-700 hover:text-blue-600">
+                                Reservation
                             </a>
                             <a href="#" className="text-gray-700 hover:text-blue-600">
                                 Profile
