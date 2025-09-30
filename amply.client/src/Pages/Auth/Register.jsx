@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { register } from "../../Servicess/authService";
+import { register } from "../../Services/authService";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
