@@ -29,7 +29,7 @@ export default function Login() {
       // Redirect based on role
       if (role === "Backofficer") {
         navigate("/dashboard");
-      } else if (role === "Station Operator") {
+      } else if (role === "StationOperator") {
         navigate("/operator-dashboard");
       } else {
         navigate("/"); 
