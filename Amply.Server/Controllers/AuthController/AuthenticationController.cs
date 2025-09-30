@@ -15,24 +15,11 @@ namespace Amply.Server.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
 
 
-        public AuthenticationController(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+        public AuthenticationController(UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
-        }
-
-
-        [HttpPost]
-        [Route("roles/add")]
-        public async Task<IActionResult> CreateRole([FromBody] CreateRoleRequest request)
-        {
-            var appRole = new ApplicationRole { Name = request.Role };
-            var createRole = await _roleManager.CreateAsync(appRole);
-
-            return Ok(new { message = "role created succesfully" });
         }
 
         [HttpPost]
