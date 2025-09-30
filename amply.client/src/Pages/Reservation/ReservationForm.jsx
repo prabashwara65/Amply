@@ -2,27 +2,36 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createReservation, getReservationById, updateReservation } from "../../Services/ReservationService/reservationSevice";
+import bannerImage from "../../Images/reservationBanner.jpg";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    date: "",
-    guests: 1,
+    fullName: "",
+    nic: "",
+    stationId: "",
+    stationName: "",
+    slotNo: 1,
+    reservationDate: "",
+    startTime: "",
+    endTime: "",
   });
 
-  // If editing, load existing reservation
+  // Load existing reservation if editing
   useEffect(() => {
     if (id) {
       const fetchReservation = async () => {
         const { data } = await getReservationById(id);
         setForm({
-          name: data.name,
-          email: data.email,
-          date: new Date(data.date).toISOString().slice(0, 16),
-          guests: data.guests,
+          fullName: data.fullName,
+          nic: data.nic || "",
+          stationId: data.stationId,
+          stationName: data.stationName,
+          slotNo: data.slotNo,
+          reservationDate: new Date(data.reservationDate).toISOString().slice(0, 10),
+          startTime: new Date(data.startTime).toISOString().slice(0, 16),
+          endTime: new Date(data.endTime).toISOString().slice(0, 16),
         });
       };
       fetchReservation();
@@ -35,36 +44,74 @@ export default function ReservationForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = {
+      ...form,
+      slotNo: parseInt(form.slotNo),
+      reservationDate: new Date(form.reservationDate),
+      startTime: new Date(form.startTime),
+      endTime: new Date(form.endTime),
+    };
+
     if (id) {
-      await updateReservation(id, form);
+      await updateReservation(id, payload);
     } else {
-      await createReservation(form);
+      await createReservation(payload);
     }
     navigate("/reservations");
   };
 
   return (
+    <div>
+      <div>
+        
+      <img src={bannerImage} alt="Reservation Banner" className="w h-64 object-cover mb-4" />
+      </div>
     <div className="container mt-4">
       <h2>{id ? "Edit Reservation" : "Add Reservation"}</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label className="form-label">Name</label>
-          <input type="text" name="name" value={form.name} onChange={handleChange} className="form-control" required />
+          <label className="form-label">Full Name</label>
+          <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="form-control" required />
         </div>
+
         <div className="mb-3">
-          <label className="form-label">Email</label>
-          <input type="email" name="email" value={form.email} onChange={handleChange} className="form-control" required />
+          <label className="form-label">NIC</label>
+          <input type="text" name="nic" value={form.nic} onChange={handleChange} className="form-control" maxLength="12" />
         </div>
+
         <div className="mb-3">
-          <label className="form-label">Date & Time</label>
-          <input type="datetime-local" name="date" value={form.date} onChange={handleChange} className="form-control" required />
+          <label className="form-label">Station ID</label>
+          <input type="text" name="stationId" value={form.stationId} onChange={handleChange} className="form-control" required />
         </div>
+
         <div className="mb-3">
-          <label className="form-label">Guests</label>
-          <input type="number" name="guests" value={form.guests} min="1" onChange={handleChange} className="form-control" required />
+          <label className="form-label">Station Name</label>
+          <input type="text" name="stationName" value={form.stationName} onChange={handleChange} className="form-control" required />
         </div>
+
+        <div className="mb-3">
+          <label className="form-label">Slot Number</label>
+          <input type="number" name="slotNo" value={form.slotNo} min="1" max="10" onChange={handleChange} className="form-control" required />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Reservation Date</label>
+          <input type="date" name="reservationDate" value={form.reservationDate} onChange={handleChange} className="form-control" required />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Start Time</label>
+          <input type="datetime-local" name="startTime" value={form.startTime} onChange={handleChange} className="form-control" required />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">End Time</label>
+          <input type="datetime-local" name="endTime" value={form.endTime} onChange={handleChange} className="form-control" required />
+        </div>
+
         <button type="submit" className="btn btn-success">{id ? "Update" : "Create"}</button>
       </form>
+    </div>
     </div>
   );
 }
