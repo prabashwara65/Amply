@@ -112,6 +112,18 @@ export default function ReservationForm() {
             </div>
 
             <div>
+              <label className="block text-sm  font-bold">Station Name</label>
+              <input
+                type="text"
+                name="stationName"
+                value={form.stationName}
+                onChange={handleChange}
+                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
               <label className="block text-sm  font-bold">Station ID</label>
               <input
                 type="text"
@@ -123,17 +135,6 @@ export default function ReservationForm() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm  font-bold">Station Name</label>
-              <input
-                type="text"
-                name="stationName"
-                value={form.stationName}
-                onChange={handleChange}
-                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-                required
-              />
-            </div>
           </div>
 
           {/* Right Column */}

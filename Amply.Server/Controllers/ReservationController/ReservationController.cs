@@ -191,7 +191,20 @@ public async Task<IActionResult> Update(string id, [FromBody] ReservationRequest
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var result = await _reservationCollection.DeleteOneAsync(r => r.Id == id);
+              // Find the reservation by id
+            var reservation = await _reservationCollection.Find(r => r.Id == id).FirstOrDefaultAsync();
+            if (reservation == null)
+                return NotFound(new { message = "Reservation not found" });
+
+             // Check if cancellation is allowed (at least 12 hours before start time)
+            var now = DateTime.UtcNow;
+            if (reservation.StartTime <= now.AddHours(12))
+            {
+                return BadRequest(new { message = "Reservations can only be cancelled at least 12 hours before the start time." });
+            }
+
+            
+                    var result = await _reservationCollection.DeleteOneAsync(r => r.Id == id);
             if (result.DeletedCount == 0) return NotFound();
 
             return Ok(new { message = "Reservation deleted successfully" });

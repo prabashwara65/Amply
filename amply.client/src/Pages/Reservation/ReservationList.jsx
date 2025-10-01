@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { getReservations, deleteReservation } from "../../Services/ReservationService/reservationSevice";
 import { Link } from "react-router-dom";
 import DataTable from "../../Components/dataTable"; 
+import {ToastContainer, toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function ReservationList() {
   const [reservations, setReservations] = useState([]);
@@ -17,16 +19,42 @@ export default function ReservationList() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this reservation?")) {
-      try {
-        await deleteReservation(id);
-        fetchReservations();
-      } catch (err) {
-        console.error("Error deleting reservation:", err);
-        alert("Failed to delete reservation.");
-      }
-    }
+   const handleDelete = (id) => {
+    // Show toast confirmation
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p>Are you sure you want to cancel this reservation?</p>
+          <div className="flex justify-end gap-2 mt-2">
+            <button
+              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+              onClick={async () => {
+                try {
+                  await deleteReservation(id);
+                  fetchReservations();
+                  toast.success("Reservation cancelled successfully!");
+                  toast.dismiss(t.id); 
+                  setTimeout(5000)
+                } catch (err) {
+                  console.error("Error deleting reservation:", err);
+                  toast.error("Failed to cancel reservation.");
+                  toast.dismiss(t.id);
+                }
+              }}
+            >
+              Yes
+            </button>
+            <button
+              className="px-3 py-1 bg-gray-400 text-black rounded hover:bg-gray-500"
+              onClick={() => toast.dismiss(t.id)}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity } 
+    );
   };
 
   useEffect(() => {
