@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createReservation, getReservationById, updateReservation } from "../../Services/ReservationService/reservationSevice";
-import bannerImage from "../../Images/reservationBanner.jpg";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
@@ -61,57 +60,133 @@ export default function ReservationForm() {
   };
 
   return (
-    <div>
-      <div>
-        
-      <img src={bannerImage} alt="Reservation Banner" className="w h-64 object-cover mb-4" />
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-700 to-gray-500">
+      <div className="w-full max-w-5xl bg-white/20 backdrop-blur-md shadow-lg rounded-lg p-10 text-white">
+        <h2 className="text-3xl font-bold  mb-4 text-center font-mono">
+          {id
+            ? "Edit Reservation"
+            : "Book a Charging Station - Drive Without Limits"}
+        </h2>
+        <p className=" mb-10 text-gray-300 text-center font-medium font-mono">
+          Book your charging station slot in just a few clicks. Fast, reliable and simple.
+        </p>
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-10 font-mono">
+          {/* Left Column */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm  font-bold">Full Name</label>
+              <input
+                type="text"
+                name="fullName"
+                value={form.fullName}
+                onChange={handleChange}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm  font-bold">NIC</label>
+              <input
+                type="text"
+                name="nic"
+                value={form.nic}
+                onChange={handleChange}
+                maxLength="12"
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm  font-bold">Station ID</label>
+              <input
+                type="text"
+                name="stationId"
+                value={form.stationId}
+                onChange={handleChange}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm  font-bold">Station Name</label>
+              <input
+                type="text"
+                name="stationName"
+                value={form.stationName}
+                onChange={handleChange}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm  font-bold">Slot Number</label>
+              <input
+                type="number"
+                name="slotNo"
+                value={form.slotNo}
+                min="1"
+                max="10"
+                onChange={handleChange}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm  font-bold">Reservation Date</label>
+              <input
+                type="date"
+                name="reservationDate"
+                value={form.reservationDate}
+                onChange={handleChange}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm  font-bold">Start Time</label>
+              <input
+                type="datetime-local"
+                name="startTime"
+                value={form.startTime}
+                onChange={handleChange}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm  font-bold">End Time</label>
+              <input
+                type="datetime-local"
+                name="endTime"
+                value={form.endTime}
+                onChange={handleChange}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Submit Button - full width across 2 columns */}
+          <div className="col-span-2">
+            <button
+              type="submit"
+              className="w-1/2 bg-black text-white py-3 rounded-md hover:bg-gray-900 transition font-bold block mx-auto "
+            >
+              {id ? "Update Reservation" : "Confirm Reservation"}
+            </button>
+          </div>
+        </form>
       </div>
-    <div className="container mt-4">
-      <h2>{id ? "Edit Reservation" : "Add Reservation"}</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Full Name</label>
-          <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="form-control" required />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">NIC</label>
-          <input type="text" name="nic" value={form.nic} onChange={handleChange} className="form-control" maxLength="12" />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Station ID</label>
-          <input type="text" name="stationId" value={form.stationId} onChange={handleChange} className="form-control" required />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Station Name</label>
-          <input type="text" name="stationName" value={form.stationName} onChange={handleChange} className="form-control" required />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Slot Number</label>
-          <input type="number" name="slotNo" value={form.slotNo} min="1" max="10" onChange={handleChange} className="form-control" required />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Reservation Date</label>
-          <input type="date" name="reservationDate" value={form.reservationDate} onChange={handleChange} className="form-control" required />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Start Time</label>
-          <input type="datetime-local" name="startTime" value={form.startTime} onChange={handleChange} className="form-control" required />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">End Time</label>
-          <input type="datetime-local" name="endTime" value={form.endTime} onChange={handleChange} className="form-control" required />
-        </div>
-
-        <button type="submit" className="btn btn-success">{id ? "Update" : "Create"}</button>
-      </form>
-    </div>
     </div>
   );
 }
