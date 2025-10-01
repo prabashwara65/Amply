@@ -4,6 +4,7 @@ import Login from "./Pages/Auth/Login";
 import Dashboard from "./Pages/Auth/Dashboard";
 import ReservationList from "./Pages/Reservation/ReservationList";
 import ReservationForm from "./Pages/Reservation/ReservationForm";
+import { ChargingStationDashboard, ChargingStationList, ChargingStationForm, ScheduleManagement } from "./Pages/ChargingStationManagement";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -34,6 +35,13 @@ function App() {
         <Route path="/reservations" element={<ReservationList />} />
         <Route path="/reservation/new" element={<ReservationForm />} />
         <Route path="/reservation/edit/:id" element={<ReservationForm />} />
+
+        {/* Charging Station Management Routes */}
+        <Route path="/charging-stations" element={<ChargingStationDashboard />} />
+        <Route path="/charging-stations/list" element={<ChargingStationList />} />
+        <Route path="/charging-stations/new" element={<ChargingStationForm />} />
+        <Route path="/charging-stations/edit/:id" element={<ChargingStationForm />} />
+        <Route path="/charging-stations/schedule/:id" element={<ScheduleManagement />} />
       </Routes>
     </Router>
   );
