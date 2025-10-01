@@ -62,10 +62,10 @@ export default function ReservationForm() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-700 to-gray-500">
       <div className="w-full max-w-5xl bg-white/20 backdrop-blur-md shadow-lg rounded-lg p-10 text-white">
-        <h2 className="text-3xl font-bold  mb-4 text-center font-mono">
+        <h2 className="text-2xl font-bold  mb-4 text-center font-mono">
           {id
             ? "Edit Reservation"
-            : "Book a Charging Station - Drive Without Limits"}
+            : "Create New Reservation"}
         </h2>
         <p className=" mb-10 text-gray-300 text-center font-medium font-mono">
           Book your charging station slot in just a few clicks. Fast, reliable and simple.
@@ -81,7 +81,7 @@ export default function ReservationForm() {
                 name="fullName"
                 value={form.fullName}
                 onChange={handleChange}
-                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="mt-1 w-full border text-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
                 required
               />
             </div>
@@ -94,7 +94,7 @@ export default function ReservationForm() {
                 value={form.nic}
                 onChange={handleChange}
                 maxLength="12"
-                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
               />
             </div>
 
@@ -105,7 +105,7 @@ export default function ReservationForm() {
                 name="stationId"
                 value={form.stationId}
                 onChange={handleChange}
-                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="mt-1 w-full  text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
                 required
               />
             </div>
@@ -117,7 +117,7 @@ export default function ReservationForm() {
                 name="stationName"
                 value={form.stationName}
                 onChange={handleChange}
-                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
                 required
               />
             </div>
@@ -134,7 +134,7 @@ export default function ReservationForm() {
                 min="1"
                 max="10"
                 onChange={handleChange}
-                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
                 required
               />
             </div>
@@ -146,7 +146,7 @@ export default function ReservationForm() {
                 name="reservationDate"
                 value={form.reservationDate}
                 onChange={handleChange}
-                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
                 required
               />
             </div>
@@ -158,7 +158,7 @@ export default function ReservationForm() {
                 name="startTime"
                 value={form.startTime}
                 onChange={handleChange}
-                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
                 required
               />
             </div>
@@ -170,7 +170,7 @@ export default function ReservationForm() {
                 name="endTime"
                 value={form.endTime}
                 onChange={handleChange}
-                className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
                 required
               />
             </div>

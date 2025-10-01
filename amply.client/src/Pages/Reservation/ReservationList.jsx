@@ -1,3 +1,4 @@
+// src/Pages/Reservation/ReservationList.jsx
 import { useEffect, useState } from "react";
 import { getReservations, deleteReservation } from "../../Services/ReservationService/reservationSevice";
 import { Link } from "react-router-dom";
@@ -48,21 +49,31 @@ export default function ReservationList() {
   ];
 
   return (
-    <div className="container mt-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold ml-5">Reservations</h2>
-        <Link to="/reservation/new" className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 mr-5">
-          Add Reservation
-        </Link>
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-700 to-gray-500">
+      <div className="w-full max-w-7xl bg-white/20 backdrop-blur-md shadow-lg rounded-lg p-10 text-white">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8 font-mono">
+          <h2 className="text-3xl font-bold ">Reservations</h2>
+          <Link 
+            to="/reservation/new" 
+            className="px-5 py-2 bg-black text-white rounded-md hover:bg-gray-900 transition font-bold"
+          >
+            + Add Reservation
+          </Link>
+        </div>
 
-      <DataTable
-        columns={columns}
-        data={reservations}
-        title="Reservations"
-        onEdit={(row) => window.location.href = `/reservation/edit/${row.id}`}
-        onDelete={(row) => handleDelete(row.id)}
-      />
+        {/* Data Table */}
+        <div className="font-mono text-gray-200">
+          <DataTable
+            columns={columns}
+            data={reservations}
+            title="Reservations"
+            onEdit={(row) => window.location.href = `/reservation/edit/${row.id}`}
+            onDelete={(row) => handleDelete(row.id)}
+          />
+        </div>
+      </div>
     </div>
   );
 }
