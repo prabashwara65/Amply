@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using Amply.Server.Dtos;
 using Amply.Server.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -77,14 +78,24 @@ namespace Amply.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ReservationRequest request)
         {
+            // Check model state first
+             if (!ModelState.IsValid)
+                 return BadRequest(ModelState);
 
-            if (!ModelState.IsValid)
+            // Validate reservation date (within 7 days from today)
+            var  todayUtc = DateTime.UtcNow.Date;
+            var maxDateUtc =  todayUtc.AddDays(7);
+
+           var reservationDateUtc = request.ReservationDate.ToUniversalTime().Date;
+
+             if (reservationDateUtc < todayUtc || reservationDateUtc > maxDateUtc)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { message = "Reservation date must be within the next 7 days." });
             }
 
+            // Create reservation
             var reservation = new Reservation
-            {
+             {
                 ReservationCode = $"RES-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
                 FullName = request.FullName,
                 NIC = request.NIC ?? string.Empty,
@@ -92,13 +103,14 @@ namespace Amply.Server.Controllers
                 StationName = request.StationName,
                 SlotNo = request.SlotNo,
                 BookingDate = DateTime.UtcNow,
-                ReservationDate = request.ReservationDate,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                ReservationDate = request.ReservationDate.ToUniversalTime(),
+                StartTime = request.StartTime.ToUniversalTime(),
+                EndTime = request.EndTime.ToUniversalTime(),
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+
             await _reservationCollection.InsertOneAsync(reservation);
 
             var response = new ReservationResponse
@@ -120,35 +132,60 @@ namespace Amply.Server.Controllers
                 UpdatedAt = reservation.UpdatedAt
             };
 
-            return Ok(response);
+        return Ok(response);
         }
 
 
         //update a reservation
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] ReservationRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+public async Task<IActionResult> Update(string id, [FromBody] ReservationRequest request)
+{
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
 
-            var update = Builders<Reservation>.Update
-                .Set(r => r.FullName, request.FullName)
-                .Set(r => r.NIC, request.NIC ?? string.Empty)
-                .Set(r => r.StationId, request.StationId)
-                .Set(r => r.StationName, request.StationName)
-                .Set(r => r.SlotNo, request.SlotNo)
-                .Set(r => r.ReservationDate, request.ReservationDate)
-                .Set(r => r.StartTime, request.StartTime)
-                .Set(r => r.EndTime, request.EndTime)
-                .Set(r => r.UpdatedAt, DateTime.UtcNow);
+    // get existing reservation
+    var reservation = await _reservationCollection.Find(r => r.Id == id).FirstOrDefaultAsync();
+    if (reservation == null)
+    { 
+        return NotFound(new { message = "Reservation not found" }); 
+    }
 
-            var result = await _reservationCollection.UpdateOneAsync(r => r.Id == id, update);
-            if (result.MatchedCount == 0) return NotFound();
+    // Reservation date must be within 7 days from today
+    var today = DateTime.UtcNow.Date;
+    var maxDate = today.AddDays(7);
 
-            return Ok(new { message = "Reservation updated successfully" });
-        }
+    if (request.ReservationDate.Date < today || request.ReservationDate.Date > maxDate)
+    {
+        return BadRequest(new { message = "Reservation date must be within the next 7 days." });
+    }
+
+    // Updates must be made at least 12 hours before reservation start time
+    var now = DateTime.UtcNow;
+    if (request.StartTime <= now.AddHours(12))
+    {
+        return BadRequest(new { message = "Updates must be made at least 12 hours before the reservation start time." });
+    }
+
+    // Update fields 
+    var update = Builders<Reservation>.Update
+        .Set(r => r.FullName, request.FullName)
+        .Set(r => r.NIC, request.NIC ?? string.Empty)
+        .Set(r => r.StationId, request.StationId)
+        .Set(r => r.StationName, request.StationName)
+        .Set(r => r.SlotNo, request.SlotNo)
+        .Set(r => r.ReservationDate, request.ReservationDate)
+        .Set(r => r.StartTime, request.StartTime)
+        .Set(r => r.EndTime, request.EndTime)
+        .Set(r => r.UpdatedAt, DateTime.UtcNow);
+
+    var result = await _reservationCollection.UpdateOneAsync(r => r.Id == id, update);
+    if (result.MatchedCount == 0) return NotFound();
+
+    return Ok(new { message = "Reservation updated successfully" });
+}
+
         
         //delete a reservation
         [HttpDelete("{id}")]
