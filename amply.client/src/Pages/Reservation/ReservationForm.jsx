@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createReservation, getReservationById, updateReservation } from "../../Services/ReservationService/reservationSevice";
+import {ToastContainer, toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function ReservationForm() {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ export default function ReservationForm() {
     startTime: "",
     endTime: "",
   });
+
 
   // Load existing reservation if editing
   useEffect(() => {
@@ -46,18 +49,28 @@ export default function ReservationForm() {
     const payload = {
       ...form,
       slotNo: parseInt(form.slotNo),
-      reservationDate: new Date(form.reservationDate),
-      startTime: new Date(form.startTime),
-      endTime: new Date(form.endTime),
+      reservationDate: new Date(form.reservationDate).toISOString(),
+      startTime: new Date(form.startTime).toISOString(),
+      endTime: new Date(form.endTime).toISOString(),
     };
-
+    
+    try{
     if (id) {
-      await updateReservation(id, payload);
+      const res = await updateReservation(id, payload);
+      toast.success(res.data.message || "Reservation updated successfully!");
     } else {
-      await createReservation(payload);
+      const res = await createReservation(payload);
+      toast.success(res.data.message || "Reservation created successfully!");
     }
     navigate("/reservations");
-  };
+  }  catch (err) {
+    if (err.response && err.response.data && err.response.data.message) {
+      toast.error(err.response.data.message);
+    } else {
+      toast.error("An error occurred. Please try again.");
+    }
+  }
+}
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-700 to-gray-500">
