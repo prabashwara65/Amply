@@ -1,20 +1,41 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Amply.Server.Dtos
 {
     public class ReservationRequest
     {
+        [Required, StringLength(100)]
+        [JsonPropertyName("fullName")]
+        public string FullName { get; set; } = string.Empty;
+
+        [StringLength(12, MinimumLength = 10)]
+        [JsonPropertyName("nic")]
+        public string? NIC { get; set; }
+
         [Required]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("stationId")]
+        public string StationId { get; set; } = string.Empty;
 
-        [Required, EmailAddress]
-        public string Email { get; set; } = string.Empty;
+        [Required, StringLength(200)]
+        [JsonPropertyName("stationName")]
+        public string StationName { get; set; } = string.Empty;
+
+        [Required, Range(1, 10)]
+        [JsonPropertyName("slotNo")]
+        public int SlotNo { get; set; }
 
         [Required]
-        public DateTime Date { get; set; }
+        [JsonPropertyName("reservationDate")]
+        public DateTime ReservationDate { get; set; }
 
-        [Required, Range(1, 100)]
-        public int Guests { get; set; }
+        [Required]
+        [JsonPropertyName("startTime")]
+        public DateTime StartTime { get; set; }
+
+        [Required]
+        [JsonPropertyName("endTime")]
+        public DateTime EndTime { get; set; }
     }
 }

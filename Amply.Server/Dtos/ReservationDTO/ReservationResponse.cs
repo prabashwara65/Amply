@@ -4,10 +4,34 @@ namespace Amply.Server.Dtos
 {
     public class ReservationResponse
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public DateTime Date { get; set; }
-        public int Guests { get; set; }
+        public string Id { get; set; } = string.Empty;
+
+        public string ReservationCode { get; set; } = string.Empty;
+
+        public string FullName { get; set; } = string.Empty;
+
+        public string? NIC { get; set; }
+
+        public string StationId { get; set; } = string.Empty;
+
+        public string StationName { get; set; } = string.Empty;
+
+        public int SlotNo { get; set; }
+
+        public DateTime BookingDate { get; set; }
+
+        public DateTime ReservationDate { get; set; }
+
+        public DateTime StartTime { get; set; }
+
+        public DateTime EndTime { get; set; }
+
+        public string Status { get; set; } = "Pending";
+
+        public string? QrCode { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
     }
 }
