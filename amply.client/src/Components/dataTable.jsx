@@ -40,10 +40,10 @@ export default function DataTable({
             placeholder="Search..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1 max-w-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="border border-gray-900 rounded px-3 py-1 max-w-sm focus:outline-none focus:ring focus:ring-gray-300 text-black"
           />
           <button
-            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100"
+            className="px-3 py-1 border border-gray-500 rounded hover:bg-gray-900 bg-black"
             onClick={() => setQuery("")}
           >
             Clear
@@ -123,9 +123,9 @@ export default function DataTable({
           Showing {(page - 1) * pageSize + 1} to{" "}
           {Math.min(page * pageSize, filtered.length)} of {filtered.length}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-gray-500">
           <button
-            className="px-2 py-1 border rounded hover:bg-gray-100"
+            className="px-2 py-1 border rounded hover:bg-gray-900 bg-black text-white"
             disabled={page === 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
@@ -135,7 +135,7 @@ export default function DataTable({
             {page} / {totalPages}
           </span>
           <button
-            className="px-2 py-1 border rounded hover:bg-gray-100"
+            className="px-2 py-1 border rounded hover:bg-gray-900 bg-black text-white"
             disabled={page === totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           >
