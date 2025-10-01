@@ -32,8 +32,8 @@ export default function ReservationForm() {
           stationName: data.stationName,
           slotNo: data.slotNo,
           reservationDate: new Date(data.reservationDate).toISOString().slice(0, 10),
-          startTime: new Date(data.startTime).toISOString().slice(0, 16),
-          endTime: new Date(data.endTime).toISOString().slice(0, 16),
+          startTime: data.startTime ? data.startTime.slice(0, 5) : "",
+          endTime: data.endTime ? data.endTime.slice(0, 5) : "",
         });
       };
       fetchReservation();
@@ -50,8 +50,8 @@ export default function ReservationForm() {
       ...form,
       slotNo: parseInt(form.slotNo),
       reservationDate: new Date(form.reservationDate).toISOString(),
-      startTime: new Date(form.startTime).toISOString(),
-      endTime: new Date(form.endTime).toISOString(),
+      startTime: form.startTime + ":00",
+      endTime:  form.endTime + ":00",
     };
     
     try{
@@ -168,7 +168,7 @@ export default function ReservationForm() {
             <div>
               <label className="block text-sm  font-bold">Start Time</label>
               <input
-                type="datetime-local"
+                type="time"
                 name="startTime"
                 value={form.startTime}
                 onChange={handleChange}
@@ -180,7 +180,7 @@ export default function ReservationForm() {
             <div>
               <label className="block text-sm  font-bold">End Time</label>
               <input
-                type="datetime-local"
+                type="time"
                 name="endTime"
                 value={form.endTime}
                 onChange={handleChange}

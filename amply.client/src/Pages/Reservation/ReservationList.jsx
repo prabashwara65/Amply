@@ -79,8 +79,8 @@ export default function ReservationList() {
     { header: "Station ID", accessor: "stationId" },
     { header: "Booking Date", accessor: "bookingDate", cell: (row) => new Date(row.bookingDate).toLocaleDateString() },
     { header: "Reservation Date", accessor: "reservationDate", cell: (row) => new Date(row.reservationDate).toLocaleDateString() },
-    { header: "Start Time", accessor: "startTime", cell: (row) => new Date(row.startTime).toLocaleString() },
-    { header: "End Time", accessor: "endTime", cell: (row) => new Date(row.endTime).toLocaleString() },
+    { header: "Start Time", accessor: "startTime", cell: (row) => row.startTime?.slice(0, 5) },
+    { header: "End Time", accessor: "endTime", cell: (row) => row.endTime?.slice(0, 5) },
     { header: "Status", accessor: "status" },
     {header: "UpdatedAt" , accessor: "updatedAt", cell: (row) => new Date(row.updatedAt).toLocaleDateString()  } 
   ];
