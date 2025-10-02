@@ -2,8 +2,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createReservation, getReservationById, updateReservation } from "../../Services/ReservationService/reservationSevice";
-import {ToastContainer, toast} from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Zap } from "lucide-react";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
@@ -19,8 +20,6 @@ export default function ReservationForm() {
     endTime: "",
   });
 
-
-  // Load existing reservation if editing
   useEffect(() => {
     if (id) {
       const fetchReservation = async () => {
@@ -54,153 +53,86 @@ export default function ReservationForm() {
       endTime:  form.endTime + ":00",
     };
     
-    try{
-    if (id) {
-      const res = await updateReservation(id, payload);
-      toast.success(res.data.message || "Reservation updated successfully!");
-    } else {
-      const res = await createReservation(payload);
-      toast.success(res.data.message || "Reservation created successfully!");
+    try {
+      if (id) {
+        const res = await updateReservation(id, payload);
+        toast.success(res.data.message || "Reservation updated successfully!");
+      } else {
+        const res = await createReservation(payload);
+        toast.success(res.data.message || "Reservation created successfully!");
+      }
+      navigate("/reservations");
+    } catch (err) {
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
     }
-    navigate("/reservations");
-  }  catch (err) {
-    if (err.response && err.response.data && err.response.data.message) {
-      toast.error(err.response.data.message);
-    } else {
-      toast.error("An error occurred. Please try again.");
-    }
-  }
-}
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-700 to-gray-500">
-      <div className="w-full max-w-5xl bg-white/20 backdrop-blur-md shadow-lg rounded-lg p-10 text-white">
-        <h2 className="text-2xl font-bold  mb-4 text-center font-mono">
-          {id
-            ? "Edit Reservation"
-            : "Create New Reservation"}
-        </h2>
-        <p className=" mb-10 text-gray-300 text-center font-medium font-mono">
-          Book your charging station slot in just a few clicks. Fast, reliable and simple.
-        </p>
+    <div className="max-w-5xl mx-auto py-10 px-4">
+      <ToastContainer />
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-10 font-mono">
+      {/* Header */}
+      <div className="mb-8 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">{id ? "Edit Reservation" : "New Reservation"}</h2>
+        <p className="text-gray-600">Book your EV charging slot quickly and easily.</p>
+      </div>
+
+      {/* Form Container */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
           {/* Left Column */}
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm  font-bold">Full Name</label>
-              <input
-                type="text"
-                name="fullName"
-                value={form.fullName}
-                onChange={handleChange}
-                className="mt-1 w-full border text-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm  font-bold">NIC</label>
-              <input
-                type="text"
-                name="nic"
-                value={form.nic}
-                onChange={handleChange}
-                maxLength="12"
-                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm  font-bold">Station Name</label>
-              <input
-                type="text"
-                name="stationName"
-                value={form.stationName}
-                onChange={handleChange}
-                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm  font-bold">Station ID</label>
-              <input
-                type="text"
-                name="stationId"
-                value={form.stationId}
-                onChange={handleChange}
-                className="mt-1 w-full  text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-                required
-              />
-            </div>
-
+            <FormField label="Full Name" name="fullName" value={form.fullName} onChange={handleChange} required />
+            <FormField label="NIC" name="nic" value={form.nic} onChange={handleChange} maxLength={12} />
+            <FormField label="Station Name" name="stationName" value={form.stationName} onChange={handleChange} required />
+            <FormField label="Station ID" name="stationId" value={form.stationId} onChange={handleChange} required />
           </div>
 
           {/* Right Column */}
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm  font-bold">Slot Number</label>
-              <input
-                type="number"
-                name="slotNo"
-                value={form.slotNo}
-                min="1"
-                max="10"
-                onChange={handleChange}
-                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm  font-bold">Reservation Date</label>
-              <input
-                type="date"
-                name="reservationDate"
-                value={form.reservationDate}
-                onChange={handleChange}
-                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm  font-bold">Start Time</label>
-              <input
-                type="time"
-                name="startTime"
-                value={form.startTime}
-                onChange={handleChange}
-                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm  font-bold">End Time</label>
-              <input
-                type="time"
-                name="endTime"
-                value={form.endTime}
-                onChange={handleChange}
-                className="mt-1 w-full text-gray-300 border rounded-md px-3 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-                required
-              />
-            </div>
+            <FormField label="Slot Number" name="slotNo" type="number" value={form.slotNo} onChange={handleChange} min={1} max={10} required />
+            <FormField label="Reservation Date" name="reservationDate" type="date" value={form.reservationDate} onChange={handleChange} required />
+            <FormField label="Start Time" name="startTime" type="time" value={form.startTime} onChange={handleChange} required />
+            <FormField label="End Time" name="endTime" type="time" value={form.endTime} onChange={handleChange} required />
           </div>
 
-          {/* Submit Button - full width across 2 columns */}
-          <div className="col-span-2">
+          {/* Submit Button */}
+          <div className="col-span-1 md:col-span-2 mt-6 text-center">
             <button
               type="submit"
-              className="w-1/2 bg-black text-white py-3 rounded-md hover:bg-gray-900 transition font-bold block mx-auto "
+              className="inline-flex items-center gap-2 bg-gray-900 text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition font-semibold shadow-md"
             >
+              <Zap className="w-5 h-5" />
               {id ? "Update Reservation" : "Confirm Reservation"}
             </button>
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+// Reusable Form Field Component
+function FormField({ label, name, value, onChange, type = "text", required, maxLength, min, max }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        required={required}
+        maxLength={maxLength}
+        min={min}
+        max={max}
+        className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
+      />
     </div>
   );
 }

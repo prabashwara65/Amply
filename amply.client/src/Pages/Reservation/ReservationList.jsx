@@ -2,9 +2,10 @@
 import { useEffect, useState } from "react";
 import { getReservations, deleteReservation } from "../../Services/ReservationService/reservationSevice";
 import { Link } from "react-router-dom";
-import DataTable from "../../Components/dataTable"; 
-import {ToastContainer, toast} from 'react-toastify';
+import UiTable from "../../Components/Table";
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ChevronRight, Trash2, Edit2 } from "lucide-react";
 
 export default function ReservationList() {
   const [reservations, setReservations] = useState([]);
@@ -15,12 +16,11 @@ export default function ReservationList() {
       setReservations(data);
     } catch (err) {
       console.error("Error fetching reservations:", err);
-      alert("Failed to load reservations.");
+      toast.error("Failed to load reservations.");
     }
   };
 
-   const handleDelete = (id) => {
-    // Show toast confirmation
+  const handleDelete = (id) => {
     toast(
       (t) => (
         <div className="flex flex-col gap-2">
@@ -33,8 +33,7 @@ export default function ReservationList() {
                   await deleteReservation(id);
                   fetchReservations();
                   toast.success("Reservation cancelled successfully!");
-                  toast.dismiss(t.id); 
-                  setTimeout(5000)
+                  toast.dismiss(t.id);
                 } catch (err) {
                   console.error("Error deleting reservation:", err);
                   toast.error("Failed to cancel reservation.");
@@ -53,7 +52,7 @@ export default function ReservationList() {
           </div>
         </div>
       ),
-      { duration: Infinity } 
+      { duration: Infinity }
     );
   };
 
@@ -61,7 +60,6 @@ export default function ReservationList() {
     fetchReservations();
   }, []);
 
-  // Counts
   const pendingCount = reservations.filter(r => r.status.toLowerCase() === "pending").length;
   const confirmedCount = reservations.filter(r => r.status.toLowerCase() === "confirmed").length;
   const todayCount = reservations.filter(r => {
@@ -69,64 +67,67 @@ export default function ReservationList() {
     return new Date(r.reservationDate).toDateString() === today;
   }).length;
 
-  // Columns for DataTable
   const columns = [
     { header: "Reservation Code", accessor: "reservationCode" },
     { header: "Full Name", accessor: "fullName" },
     { header: "NIC", accessor: "nic" },
     { header: "Station Name", accessor: "stationName" },
     { header: "Slot No", accessor: "slotNo" },
-    { header: "Station ID", accessor: "stationId" },
     { header: "Booking Date", accessor: "bookingDate", cell: (row) => new Date(row.bookingDate).toLocaleDateString() },
     { header: "Reservation Date", accessor: "reservationDate", cell: (row) => new Date(row.reservationDate).toLocaleDateString() },
     { header: "Start Time", accessor: "startTime", cell: (row) => row.startTime?.slice(0, 5) },
     { header: "End Time", accessor: "endTime", cell: (row) => row.endTime?.slice(0, 5) },
     { header: "Status", accessor: "status" },
-    {header: "UpdatedAt" , accessor: "updatedAt", cell: (row) => new Date(row.updatedAt).toLocaleDateString()  } 
   ];
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-700 to-gray-500">
-      <div className="w-full max-w-7xl bg-white/20 backdrop-blur-md shadow-lg rounded-lg p-10 text-white mt-10 mb-10">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8 font-mono">
-          <h2 className="text-3xl font-bold ">Reservations</h2>
-          <Link 
-            to="/reservation/new" 
-            className="px-5 py-2 bg-black text-white rounded-md hover:bg-gray-900 transition font-bold"
-          >
-            + Add Reservation
-          </Link>
+    <div className="max-w-7xl mx-auto py-10 px-4">
+      <ToastContainer />
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-1">Reservations Dashboard</h2>
+          <p className="text-gray-600">Manage all reservations efficiently</p>
+        </div>
+        <Link 
+          to="/reservation/new"
+          className="px-5 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold flex items-center gap-2"
+        >
+          + Add Reservation <ChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg p-6 text-center">
+          <p className="text-gray-500 font-medium">Pending Reservations</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{pendingCount}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg p-6 text-center">
+          <p className="text-gray-500 font-medium">Confirmed Reservations</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{confirmedCount}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg p-6 text-center">
+          <p className="text-gray-500 font-medium">Today's Reservations</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{todayCount}</p>
+        </div>
+      </div>
+
+      {/* Table Section */}
+      <div className="bg-white border border-gray-200 rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-gray-900">All Reservations</h3>
+          <p className="text-sm text-gray-500">{reservations.length} total</p>
         </div>
 
-        {/* Top Summary Cards */}
-        <div className="grid grid-cols-3 gap-6 mb-5 font-mono">
-          <div className="bg-black/40 p-5 rounded-lg text-center shadow-md hover:bg-black/60 transition">
-            <h3 className="text-lg font-semibold ">Pending Reservations</h3>
-            <p className="text-3xl font-bold mt-2">{pendingCount}</p>
-          </div>
-          <div className="bg-black/40 p-5 rounded-lg text-center shadow-md hover:bg-black/60 transition">
-            <h3 className="text-lg font-semibold">Confirmed Reservations</h3>
-            <p className="text-3xl font-bold mt-2">{confirmedCount}</p>
-          </div>
-          <div className="bg-black/40 p-5 rounded-lg text-center shadow-md hover:bg-black/60 transition">
-            <h3 className="text-lg font-semibold">Today's Reservations</h3>
-            <p className="text-3xl font-bold mt-2">{todayCount}</p>
-          </div>
-        </div>
-
-
-        {/* Data Table */}
-        <div className="font-mono text-gray-200">
-          <DataTable
-            columns={columns}
-            data={reservations}
-            title="Reservations"
-            onEdit={(row) => window.location.href = `/reservation/edit/${row.id}`}
-            onDelete={(row) => handleDelete(row.id)}
-          />
-        </div>
+        <UiTable 
+          title=""
+          columns={columns}
+          data={reservations}
+          onEdit={(row) => window.location.href = `/reservation/edit/${row.id}`}
+          onDelete={(row) => handleDelete(row.id)}
+        />
       </div>
     </div>
   );
