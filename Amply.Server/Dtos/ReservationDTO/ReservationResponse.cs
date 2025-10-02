@@ -22,9 +22,9 @@ namespace Amply.Server.Dtos
 
         public DateTime ReservationDate { get; set; }
 
-        public DateTime StartTime { get; set; }
+        public TimeSpan StartTime { get; set; }
 
-        public DateTime EndTime { get; set; }
+        public TimeSpan EndTime { get; set; }
 
         public string Status { get; set; } = "Pending";
 

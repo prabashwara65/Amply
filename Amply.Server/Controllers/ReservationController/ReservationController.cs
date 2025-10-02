@@ -104,8 +104,8 @@ namespace Amply.Server.Controllers
                 SlotNo = request.SlotNo,
                 BookingDate = DateTime.UtcNow,
                 ReservationDate = request.ReservationDate.ToUniversalTime(),
-                StartTime = request.StartTime.ToUniversalTime(),
-                EndTime = request.EndTime.ToUniversalTime(),
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -163,10 +163,11 @@ public async Task<IActionResult> Update(string id, [FromBody] ReservationRequest
 
     // Updates must be made at least 12 hours before reservation start time
     var now = DateTime.UtcNow;
-    if (request.StartTime <= now.AddHours(12))
-    {
-        return BadRequest(new { message = "Updates must be made at least 12 hours before the reservation start time." });
-    }
+    var startDateTime = request.ReservationDate.Date + request.StartTime; 
+    if (startDateTime <= now.AddHours(12))
+            {
+                return BadRequest(new { message = "Updates must be made at least 12 hours before the reservation start time." });
+            }
 
     // Update fields 
     var update = Builders<Reservation>.Update
@@ -191,7 +192,21 @@ public async Task<IActionResult> Update(string id, [FromBody] ReservationRequest
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var result = await _reservationCollection.DeleteOneAsync(r => r.Id == id);
+              // Find the reservation by id
+            var reservation = await _reservationCollection.Find(r => r.Id == id).FirstOrDefaultAsync();
+            if (reservation == null)
+                return NotFound(new { message = "Reservation not found" });
+
+             // Check if cancellation is allowed (at least 12 hours before start time)
+            var now = DateTime.UtcNow;
+            var reservationStartDateTime = reservation.ReservationDate.Date + reservation.StartTime;
+            if (reservationStartDateTime <= now.AddHours(12))
+            {
+                return BadRequest(new { message = "Reservations can only be cancelled at least 12 hours before the start time." });
+            }
+
+            
+                    var result = await _reservationCollection.DeleteOneAsync(r => r.Id == id);
             if (result.DeletedCount == 0) return NotFound();
 
             return Ok(new { message = "Reservation deleted successfully" });

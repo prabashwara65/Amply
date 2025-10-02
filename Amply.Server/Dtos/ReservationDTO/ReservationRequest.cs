@@ -32,10 +32,10 @@ namespace Amply.Server.Dtos
 
         [Required]
         [JsonPropertyName("startTime")]
-        public DateTime StartTime { get; set; }
+        public TimeSpan StartTime { get; set; }
 
         [Required]
         [JsonPropertyName("endTime")]
-        public DateTime EndTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 }

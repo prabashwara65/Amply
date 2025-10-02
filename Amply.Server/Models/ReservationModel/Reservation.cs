@@ -44,11 +44,11 @@ namespace Amply.Server.Models
 
          [BsonElement("startTime")]
         [Required]
-        public DateTime StartTime { get; set; }
+        public TimeSpan StartTime { get; set; }
 
         [BsonElement("endTime")]
         [Required]
-        public DateTime EndTime { get; set; }
+        public TimeSpan EndTime { get; set; }
 
         [BsonElement("status")]
         [Required]
