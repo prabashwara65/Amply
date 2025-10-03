@@ -236,21 +236,13 @@ namespace Amply.Server.Controllers
                 try
                 {
 
-                    //     //Encode reservation code for URL
-                    // var encodedText = Uri.EscapeDataString(reservation.ReservationCode);
-                    //     var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encodedText}";
-
-                    //     //convert the qr image from URL to Base64
-                    //     using var httpClient = new HttpClient();
-                    //     var imageBytes = await httpClient.GetByteArrayAsync(qrUrl);
-                    //     qrCodeBase64 = $"data:image/png;base64,{Convert.ToBase64String(imageBytes)}";
-                     
                       // Generate QR code as Base64 string
-        qrCodeBase64 = GenerateQrCodeBase64(reservation.ReservationCode);
+                     qrCodeBase64 = GenerateQrCodeBase64(reservation.ReservationCode, reservation.FullName, reservation.SlotNo, reservation.StartTime, reservation.EndTime);
 
                         //Update qr code in database
                     var update = Builders<Reservation>.Update.Set(r => r.QrCode, qrCodeBase64)
                                                                  .Set(r => r.UpdatedAt, DateTime.UtcNow);
+
                        var updateResult= await _reservationCollection.UpdateOneAsync(r => r.Id == id, update);
 
                         if (updateResult.ModifiedCount == 0)
@@ -275,10 +267,23 @@ namespace Amply.Server.Controllers
                     });
         }
 
-        private string GenerateQrCodeBase64(string text)
+        private string GenerateQrCodeBase64(string reservationCode, string fullName, int slotNo, TimeSpan startTime, TimeSpan endTime )
         {
+
+            //create JSON string for QR code
+            var qrContent = new
+            {
+                reservationCode,
+                fullName,
+                slotNo,
+                startTime,
+                endTime
+            };
+
+            string qrText = System.Text.Json.JsonSerializer.Serialize(qrContent);
+
             using var qrGenerator = new QRCodeGenerator();
-            using var qrCodeData = qrGenerator.CreateQrCode(text, QRCodeGenerator.ECCLevel.Q);
+            using var qrCodeData = qrGenerator.CreateQrCode(qrText, QRCodeGenerator.ECCLevel.Q);
             using var qrCode = new PngByteQRCode(qrCodeData);
             byte[] qrCodeBytes = qrCode.GetGraphic(20);
             return $"data:image/png;base64,{Convert.ToBase64String(qrCodeBytes)}";
