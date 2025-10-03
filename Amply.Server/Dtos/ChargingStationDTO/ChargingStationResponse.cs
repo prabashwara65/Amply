@@ -49,10 +49,6 @@ namespace Amply.Server.Dtos
     {
         public DateTime Date { get; set; }
 
-        public string StartTime { get; set; } = string.Empty;
-
-        public string EndTime { get; set; } = string.Empty;
-
         public bool IsAvailable { get; set; } = true;
 
         public int SlotNumber { get; set; } = 1;

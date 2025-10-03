@@ -32,8 +32,6 @@ namespace Amply.Server.Controllers
                     schedule.Add(new ScheduleSlot
                     {
                         Date = currentDate,
-                        StartTime = $"{8 + (slot - 1) * 2}:00", // 8:00, 10:00, 12:00, 14:00, 16:00
-                        EndTime = $"{10 + (slot - 1) * 2}:00", // 10:00, 12:00, 14:00, 16:00, 18:00
                         IsAvailable = true,
                         SlotNumber = slot
                     });

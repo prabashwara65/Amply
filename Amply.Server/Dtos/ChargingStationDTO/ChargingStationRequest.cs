@@ -75,14 +75,6 @@ namespace Amply.Server.Dtos
         [JsonPropertyName("date")]
         public DateTime Date { get; set; }
 
-        [Required]
-        [JsonPropertyName("startTime")]
-        public string StartTime { get; set; } = string.Empty;
-
-        [Required]
-        [JsonPropertyName("endTime")]
-        public string EndTime { get; set; } = string.Empty;
-
         [JsonPropertyName("isAvailable")]
         public bool IsAvailable { get; set; } = true;
 

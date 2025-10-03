@@ -25,6 +25,9 @@ export default function ChargingStationFormDialog({ isOpen, onClose, stationId, 
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Generate default schedule for new stations (7 days, 5 slots each)
   const generateDefaultSchedule = () => {
@@ -38,8 +41,6 @@ export default function ChargingStationFormDialog({ isOpen, onClose, stationId, 
       for (let slot = 1; slot <= 5; slot++) {
         schedule.push({
           date: currentDate.toISOString().split('T')[0], // YYYY-MM-DD format
-          startTime: `${8 + (slot - 1) * 2}:00`, // 8:00, 10:00, 12:00, 14:00, 16:00
-          endTime: `${10 + (slot - 1) * 2}:00`, // 10:00, 12:00, 14:00, 16:00, 18:00
           isAvailable: true,
           slotNumber: slot
         });
@@ -47,6 +48,111 @@ export default function ChargingStationFormDialog({ isOpen, onClose, stationId, 
     }
     
     return schedule;
+  };
+
+  // Get current location using browser geolocation
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by this browser");
+      return;
+    }
+
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+          // Reverse geocoding to get address from coordinates
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          );
+          const data = await response.json();
+          
+          setForm(prev => ({
+            ...prev,
+            location: {
+              ...prev.location,
+              latitude: latitude,
+              longitude: longitude,
+              address: data.localityInfo?.administrative?.[0]?.name || 
+                      data.localityInfo?.informative?.[0]?.name || 
+                      `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              city: data.city || data.locality || '',
+              state: data.principalSubdivision || '',
+              country: data.countryName || ''
+            }
+          }));
+          
+          toast.success("Location detected successfully!");
+        } catch (error) {
+          // Fallback: just use coordinates
+          setForm(prev => ({
+            ...prev,
+            location: {
+              ...prev.location,
+              latitude: latitude,
+              longitude: longitude,
+              address: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+            }
+          }));
+          toast.success("Coordinates detected! Please enter the address manually.");
+        }
+      },
+      (error) => {
+        toast.error("Unable to retrieve your location. Please enter coordinates manually.");
+        console.error("Geolocation error:", error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      }
+    );
+    
+    setLocationLoading(false);
+  };
+
+  // Search for address suggestions
+  const searchAddress = async (query) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.bigdatacloud.net/data/forward-geocode-client?query=${encodeURIComponent(query)}&localityLanguage=en`
+      );
+      const data = await response.json();
+      
+      if (data.results) {
+        setAddressSuggestions(data.results.slice(0, 5)); // Limit to 5 suggestions
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error("Address search error:", error);
+      setAddressSuggestions([]);
+    }
+  };
+
+  // Select address from suggestions
+  const selectAddress = (suggestion) => {
+    setForm(prev => ({
+      ...prev,
+      location: {
+        ...prev.location,
+        address: suggestion.formatted || suggestion.locality || '',
+        latitude: suggestion.latitude,
+        longitude: suggestion.longitude,
+        city: suggestion.city || suggestion.locality || '',
+        state: suggestion.principalSubdivision || '',
+        country: suggestion.countryName || ''
+      }
+    }));
+    setShowSuggestions(false);
+    setAddressSuggestions([]);
   };
 
   // Load existing charging station if editing
@@ -120,6 +226,11 @@ export default function ChargingStationFormDialog({ isOpen, onClose, stationId, 
           [locationField]: type === 'number' ? parseFloat(value) || 0 : value
         }
       }));
+      
+      // Trigger address search for address field
+      if (locationField === 'address') {
+        searchAddress(value);
+      }
     } else {
       setForm(prev => ({
         ...prev,
@@ -247,23 +358,83 @@ export default function ChargingStationFormDialog({ isOpen, onClose, stationId, 
           </div>
 
           {/* Location Information */}
+          
           <div className="border-t border-gray-200 pt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Location Information</h3>
+             {/* Coordinates Section with Help Text */}
+             <div className="md:col-span-2">
+                <div className="mb-4 p-3 bg-gray-300 border border-gray-200 rounded-md">
+                  <p className="text-sm text-gray-700">
+                    <strong>Easy Location Setup:</strong> Use the location icon next to the address field to auto-detect your current location, 
+                    or start typing an address to see suggestions. Coordinates will be filled automatically!
+                  </p>
+                </div>
+              </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Address *
                 </label>
-                <input
-                  type="text"
-                  name="location.address"
-                  value={form.location.address}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
-                    errors["location.address"] ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="123 Main Street"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="location.address"
+                    value={form.location.address}
+                    onChange={handleChange}
+                    onFocus={() => {
+                      if (addressSuggestions.length > 0) setShowSuggestions(true);
+                    }}
+                    onBlur={() => {
+                      // Delay hiding suggestions to allow clicking on them
+                      setTimeout(() => setShowSuggestions(false), 200);
+                    }}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
+                      errors["location.address"] ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="123 Main Street"
+                  />
+                  
+                  {/* Location Detection Button */}
+                  <button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    disabled={locationLoading}
+                    className="absolute right-2 top-2 p-1 text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                    title="Detect current location"
+                  >
+                    {locationLoading ? (
+                      <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    )}
+                  </button>
+                  
+                  {/* Address Suggestions Dropdown */}
+                  {showSuggestions && addressSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {addressSuggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => selectAddress(suggestion)}
+                          className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                        >
+                          <div className="font-medium text-gray-900">
+                            {suggestion.formatted || suggestion.locality}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {suggestion.city}, {suggestion.principalSubdivision}, {suggestion.countryName}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {errors["location.address"] && <p className="text-red-500 text-sm mt-1">{errors["location.address"]}</p>}
               </div>
 
@@ -318,6 +489,8 @@ export default function ChargingStationFormDialog({ isOpen, onClose, stationId, 
                 {errors["location.country"] && <p className="text-red-500 text-sm mt-1">{errors["location.country"]}</p>}
               </div>
 
+             
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Latitude *
@@ -359,12 +532,7 @@ export default function ChargingStationFormDialog({ isOpen, onClose, stationId, 
           {/* Station Configuration */}
           <div className="border-t border-gray-200 pt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Station Configuration</h3>
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm text-blue-700">
-                <strong>Automatic Schedule Generation:</strong> Each station will automatically have 35 slots (7 days × 5 slots per day) 
-                with time slots from 8:00 AM to 6:00 PM. You can manage the schedule after creating the station.
-              </p>
-            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

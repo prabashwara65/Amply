@@ -84,14 +84,6 @@ namespace Amply.Server.Models
         [BsonRequired]
         public DateTime Date { get; set; }
 
-        [BsonElement("startTime")]
-        [BsonRequired]
-        public string StartTime { get; set; } = string.Empty;
-
-        [BsonElement("endTime")]
-        [BsonRequired]
-        public string EndTime { get; set; } = string.Empty;
-
         [BsonElement("isAvailable")]
         [BsonRequired]
         public bool IsAvailable { get; set; } = true;
