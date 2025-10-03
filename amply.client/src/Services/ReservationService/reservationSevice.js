@@ -28,3 +28,9 @@ export const updateReservation = async (id, data) => {
 export const deleteReservation = async (id) => {
   return await axios.delete(`${API_URL}/${id}`);
 };
+
+// Get reservation status & QR
+export const getStatusById = async (id) => {
+  return await axios.get(`${API_URL}/${id}/status`);
+};
+

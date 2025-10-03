@@ -5,11 +5,13 @@ import { Link } from "react-router-dom";
 import UiTable from "../../Components/Table";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ChevronRight, Trash2, Edit2 } from "lucide-react";
+import { ChevronRight, Trash2, Edit2, QrCode } from "lucide-react";
 
 export default function ReservationList() {
   const [reservations, setReservations] = useState([]);
+  const [selectedQr, setSelectedQr] = useState(null);
 
+  // Fetch all reservations
   const fetchReservations = async () => {
     try {
       const { data } = await getReservations();
@@ -20,6 +22,7 @@ export default function ReservationList() {
     }
   };
 
+  // Delete reservation with confirmation toast
   const handleDelete = (id) => {
     toast(
       (t) => (
@@ -54,12 +57,15 @@ export default function ReservationList() {
       ),
       { duration: Infinity }
     );
-  };
+    };
 
-  useEffect(() => {
-    fetchReservations();
-  }, []);
+    useEffect(() => {
+        fetchReservations();
+    }, []);
 
+
+
+  // Counts for summary cards
   const pendingCount = reservations.filter(r => r.status.toLowerCase() === "pending").length;
   const confirmedCount = reservations.filter(r => r.status.toLowerCase() === "confirmed").length;
   const todayCount = reservations.filter(r => {
@@ -67,6 +73,7 @@ export default function ReservationList() {
     return new Date(r.reservationDate).toDateString() === today;
   }).length;
 
+  // Table columns
   const columns = [
     { header: "Reservation Code", accessor: "reservationCode" },
     { header: "Full Name", accessor: "fullName" },
@@ -78,6 +85,29 @@ export default function ReservationList() {
     { header: "Start Time", accessor: "startTime", cell: (row) => row.startTime?.slice(0, 5) },
     { header: "End Time", accessor: "endTime", cell: (row) => row.endTime?.slice(0, 5) },
     { header: "Status", accessor: "status" },
+      {
+          header: "QR Code",
+          accessor: "qrCode",
+          cell: (row) => row.qrCode ? (
+              <button onClick={() => setSelectedQr(row.qrCode)} className="text-blue-600 hover:text-blue-800">
+                  <QrCode className="w-5 h-5" />
+              </button>
+          ) : <span className="text-gray-400">N/A</span>
+      },
+      {
+          header: "Actions",
+          accessor: "id",
+          cell: (row) => (
+              <div className="flex gap-2 justify-end">
+                  <button onClick={() => window.location.href = `/reservation/edit/${row.id}`} className="text-yellow-600 hover:text-yellow-800">
+                      <Edit2 className="w-5 h-5" />
+                  </button>
+                  <button onClick={() => handleDelete(row.id)} className="text-red-600 hover:text-red-800">
+                      <Trash2 className="w-5 h-5" />
+                  </button>
+              </div>
+          )
+      }
   ];
 
   return (
@@ -90,7 +120,7 @@ export default function ReservationList() {
           <h2 className="text-3xl font-bold text-gray-900 mb-1">Reservations Dashboard</h2>
           <p className="text-gray-600">Manage all reservations efficiently</p>
         </div>
-        <Link 
+        <Link
           to="/reservation/new"
           className="px-5 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold flex items-center gap-2"
         >
@@ -121,14 +151,27 @@ export default function ReservationList() {
           <p className="text-sm text-gray-500">{reservations.length} total</p>
         </div>
 
-        <UiTable 
+        <UiTable
           title=""
           columns={columns}
           data={reservations}
-          onEdit={(row) => window.location.href = `/reservation/edit/${row.id}`}
-          onDelete={(row) => handleDelete(row.id)}
         />
       </div>
+          {/* QR Code Modal */}
+          {selectedQr && (
+              <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+                  <div className="bg-gray-300 p-4 rounded-lg shadow-lg pointer-events-auto flex flex-col items-center gap-3">
+                      <h4 className="text-lg font-semibold text-gray-800">Reservation QR</h4>
+                      <img src={selectedQr} alt="QR Code" className="w-40 h-40" />
+                      <button
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                          onClick={() => setSelectedQr(null)}
+                      >
+                          Close
+                      </button>
+                  </div>
+              </div>
+          )}
     </div>
   );
 }
