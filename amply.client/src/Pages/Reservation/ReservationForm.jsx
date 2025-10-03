@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createReservation, getReservationById, updateReservation } from "../../Services/ReservationService/reservationSevice";
+import { getActiveChargingStations } from '../../Services/ChargingStationManagementService/chargingStationService';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Zap } from "lucide-react";
@@ -9,6 +10,7 @@ import { Zap } from "lucide-react";
 export default function ReservationForm() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [stations, setStations] = useState([]);
   const [form, setForm] = useState({
     fullName: "",
     nic: "",
@@ -39,9 +41,25 @@ export default function ReservationForm() {
     }
   }, [id]);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  //const handleChange = (e) => {
+  //  setForm({ ...form, [e.target.name]: e.target.value });
+    //};
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        if (name === "stationName") {
+            //when station name changed , auto fill stationId
+            const selectedStation = stations.find((s) => s.stationName === value);
+            setForm({
+                ...form,
+                stationName: value,
+                stationId: selectedStation ? selectedStation.stationId : "",
+            });
+        } else {
+            setForm({ ...form, [name]: value });
+        }
+    };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,7 +87,21 @@ export default function ReservationForm() {
         toast.error("An error occurred. Please try again.");
       }
     }
-  };
+    };
+
+    //Fetch active stations
+    useEffect(() => {
+        const fetchStations = async () => {
+            try {
+                const { data } = await getActiveChargingStations();
+                setStations(data);
+            } catch (err) {
+                console.log(err);
+                toast.error("Failed to fetch stations");
+            }
+        };
+        fetchStations();
+    }, []);
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
@@ -89,14 +121,35 @@ export default function ReservationForm() {
           <div className="space-y-4">
             <FormField label="Full Name" name="fullName" value={form.fullName} onChange={handleChange} required />
             <FormField label="NIC" name="nic" value={form.nic} onChange={handleChange} maxLength={12} />
-            <FormField label="Station Name" name="stationName" value={form.stationName} onChange={handleChange} required />
-            <FormField label="Station ID" name="stationId" value={form.stationId} onChange={handleChange} required />
+            {/*<FormField label="Station Name" name="stationName" value={form.stationName} onChange={handleChange} required />*/}
+
+            {/*station dropdown */}
+             <div>
+                    <label className="block text-sm fornt-medium text-gray-700">
+                        Station Name
+                          </label>
+                          <select
+                              name="stationName"
+                              value={form.stationName}
+                              onChange={handleChange}
+                              required
+                              className="mt-1 w-full border border-gray-300 rounded md px-3 py-2 text-gray-900 focus:ring-2 focus:ring-gray-400 focus:outline-none transition">
+                              <option value="">Select a station</option>
+                              {stations.map((station) => (
+                                  <option key={station.id} value={station.stationName}>
+                                      {station.stationName} ({station.location.city})
+                                  </option>
+                              ))}
+                          </select>
+            </div>
+
+            <FormField label="Station ID" name="stationId" value={form.stationId} onChange={handleChange} required readOnly />
           </div>
 
           {/* Right Column */}
           <div className="space-y-4">
-            <FormField label="Slot Number" name="slotNo" type="number" value={form.slotNo} onChange={handleChange} min={1} max={10} required />
             <FormField label="Reservation Date" name="reservationDate" type="date" value={form.reservationDate} onChange={handleChange} required />
+            <FormField label="Slot Number" name="slotNo" type="number" value={form.slotNo} onChange={handleChange} min={1} max={10} required />
             <FormField label="Start Time" name="startTime" type="time" value={form.startTime} onChange={handleChange} required />
             <FormField label="End Time" name="endTime" type="time" value={form.endTime} onChange={handleChange} required />
           </div>
@@ -118,7 +171,7 @@ export default function ReservationForm() {
 }
 
 // Reusable Form Field Component
-function FormField({ label, name, value, onChange, type = "text", required, maxLength, min, max }) {
+function FormField({ label, name, value, onChange, type = "text", required, maxLength, min, max, readOnly }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -131,6 +184,7 @@ function FormField({ label, name, value, onChange, type = "text", required, maxL
         maxLength={maxLength}
         min={min}
         max={max}
+        readOnly={readOnly}
         className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
       />
     </div>

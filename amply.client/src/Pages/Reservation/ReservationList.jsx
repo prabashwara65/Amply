@@ -95,7 +95,7 @@ export default function ReservationList() {
           ) : <span className="text-gray-400">N/A</span>
       },
       {
-          header: "Actions",
+          header: "",
           accessor: "id",
           cell: (row) => (
               <div className="flex gap-2 justify-end">
