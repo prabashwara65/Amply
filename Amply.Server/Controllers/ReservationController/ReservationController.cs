@@ -26,24 +26,43 @@ namespace Amply.Server.Controllers
         {
             var reservations = await _reservationCollection.Find(_ => true).ToListAsync();
 
-            var response = reservations.Select(r => new ReservationResponse
+            var response = new List<ReservationResponse>();
+
+            foreach (var r in reservations)
             {
-                Id = r.Id,
-                ReservationCode = r.ReservationCode,
-                FullName = r.FullName,
-                NIC = r.NIC,
-                StationId = r.StationId,
-                StationName = r.StationName,
-                SlotNo = r.SlotNo,
-                BookingDate = r.BookingDate,
-                ReservationDate = r.ReservationDate,
-                StartTime = r.StartTime,
-                EndTime = r.EndTime,
-                Status = r.Status,
-                QrCode = r.QrCode,
-                CreatedAt = r.CreatedAt,
-                UpdatedAt = r.UpdatedAt
-            });
+                string? qrCodeBase64 = r.QrCode;
+
+                //generate QR if confirmed and QR not yet created
+                if(r.Status.Equals("confirmed", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(qrCodeBase64))
+                {
+                    qrCodeBase64 = GenerateQrCodeBase64(r.ReservationCode, r.FullName, r.SlotNo, r.StartTime, r.EndTime);
+
+                    //update DB 
+                    var update = Builders<Reservation>.Update.Set(r => r.QrCode, qrCodeBase64)
+                                                             .Set(r => r.UpdatedAt, DateTime.UtcNow);
+                    await _reservationCollection.UpdateOneAsync(x => x.Id == r.Id, update);
+                }
+
+                response.Add(new ReservationResponse
+                {
+                    Id = r.Id,
+                    ReservationCode = r.ReservationCode,
+                    FullName = r.FullName,
+                    NIC = r.NIC,
+                    StationId = r.StationId,
+                    StationName = r.StationName,
+                    SlotNo = r.SlotNo,
+                    BookingDate = r.BookingDate,
+                    ReservationDate = r.ReservationDate,
+                    StartTime = r.StartTime,
+                    EndTime = r.EndTime,
+                    Status = r.Status,
+                    QrCode = qrCodeBase64,
+                    CreatedAt = r.CreatedAt,
+                    UpdatedAt = r.UpdatedAt
+                });
+            }
+      
             return Ok(response);
         }
 

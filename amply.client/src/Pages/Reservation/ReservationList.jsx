@@ -1,6 +1,6 @@
 // src/Pages/Reservation/ReservationList.jsx
 import { useEffect, useState } from "react";
-import { getReservations, deleteReservation, getStatusById } from "../../Services/ReservationService/reservationSevice";
+import { getReservations, deleteReservation } from "../../Services/ReservationService/reservationSevice";
 import { Link } from "react-router-dom";
 import UiTable from "../../Components/Table";
 import { ToastContainer, toast } from 'react-toastify';
@@ -57,27 +57,13 @@ export default function ReservationList() {
       ),
       { duration: Infinity }
     );
-  };
+    };
 
-  // Show QR code for confirmed reservations
-  const handleShowQr = async (id) => {
-    try {
-      console.log("Fetching QR for id:", id);
-      const { data } = await getStatusById(id);
-      if (data.isConfirmed && data.qrCode) {
-        setSelectedQr(data.qrCode); 
-      } else {
-        toast.info("Reservation is not confirmed yet.");
-      }
-    } catch (err) {
-      console.error("Error fetching QR:", err);
-      toast.error("Failed to fetch QR code.");
-    }
-  };
+    useEffect(() => {
+        fetchReservations();
+    }, []);
 
-  useEffect(() => {
-    fetchReservations();
-  }, []);
+
 
   // Counts for summary cards
   const pendingCount = reservations.filter(r => r.status.toLowerCase() === "pending").length;
@@ -99,23 +85,29 @@ export default function ReservationList() {
     { header: "Start Time", accessor: "startTime", cell: (row) => row.startTime?.slice(0, 5) },
     { header: "End Time", accessor: "endTime", cell: (row) => row.endTime?.slice(0, 5) },
     { header: "Status", accessor: "status" },
-    {
-      header: "Actions",
-      accessor: "id",
-      cell: (row) => (
-        <div className="flex gap-2">
-          <button onClick={() => handleShowQr(row.id)} className="text-blue-600 hover:text-blue-800">
-            <QrCode className="w-5 h-5" />
-          </button>
-          <button onClick={() => window.location.href = `/reservation/edit/${row.id}`} className="text-yellow-600 hover:text-yellow-800">
-            <Edit2 className="w-5 h-5" />
-          </button>
-          <button onClick={() => handleDelete(row.id)} className="text-red-600 hover:text-red-800">
-            <Trash2 className="w-5 h-5" />
-          </button>
-        </div>
-      )
-    }
+      {
+          header: "QR Code",
+          accessor: "qrCode",
+          cell: (row) => row.qrCode ? (
+              <button onClick={() => setSelectedQr(row.qrCode)} className="text-blue-600 hover:text-blue-800">
+                  <QrCode className="w-5 h-5" />
+              </button>
+          ) : <span className="text-gray-400">N/A</span>
+      },
+      {
+          header: "Actions",
+          accessor: "id",
+          cell: (row) => (
+              <div className="flex gap-2 justify-end">
+                  <button onClick={() => window.location.href = `/reservation/edit/${row.id}`} className="text-yellow-600 hover:text-yellow-800">
+                      <Edit2 className="w-5 h-5" />
+                  </button>
+                  <button onClick={() => handleDelete(row.id)} className="text-red-600 hover:text-red-800">
+                      <Trash2 className="w-5 h-5" />
+                  </button>
+              </div>
+          )
+      }
   ];
 
   return (
@@ -165,21 +157,21 @@ export default function ReservationList() {
           data={reservations}
         />
       </div>
-
-      {/* QR Code Modal */}
-      {selectedQr && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg flex flex-col items-center gap-4">
-            <img src={selectedQr} alt="QR Code" className="w-64 h-64" />
-            <button
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              onClick={() => setSelectedQr(null)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+          {/* QR Code Modal */}
+          {selectedQr && (
+              <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+                  <div className="bg-gray-300 p-4 rounded-lg shadow-lg pointer-events-auto flex flex-col items-center gap-3">
+                      <h4 className="text-lg font-semibold text-gray-800">Reservation QR</h4>
+                      <img src={selectedQr} alt="QR Code" className="w-40 h-40" />
+                      <button
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                          onClick={() => setSelectedQr(null)}
+                      >
+                          Close
+                      </button>
+                  </div>
+              </div>
+          )}
     </div>
   );
 }
