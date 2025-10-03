@@ -27,11 +27,11 @@ namespace Amply.Server.Models
 
         [BsonElement("totalSlots")]
         [BsonRequired, Range(1, 50)]
-        public int TotalSlots { get; set; } = 1;
+        public int TotalSlots { get; set; } = 35; // 7 days * 5 slots = 35 total slots
 
         [BsonElement("availableSlots")]
         [BsonRequired, Range(0, 50)]
-        public int AvailableSlots { get; set; } = 1;
+        public int AvailableSlots { get; set; } = 35; // Initially all slots are available
 
         [BsonElement("schedule")]
         public List<ScheduleSlot> Schedule { get; set; } = new List<ScheduleSlot>();

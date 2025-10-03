@@ -1,18 +1,24 @@
 // src/Pages/ChargingStationManagement/ChargingStationDashboard.jsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getChargingStations, deleteChargingStation } from "../../Services/ChargingStationManagementService/chargingStationService";
 import { getReservations } from "../../Services/ReservationService/reservationSevice";
 import DeactivationModal from "./DeactivationModal";
+import ChargingStationFormDialog from "./ChargingStationFormDialog";
 import { toast } from 'react-toastify';
 
 export default function ChargingStationDashboard() {
+  const navigate = useNavigate();
   const [chargingStations, setChargingStations] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deactivationModal, setDeactivationModal] = useState({
     isOpen: false,
     station: null
+  });
+  const [formDialog, setFormDialog] = useState({
+    isOpen: false,
+    stationId: null
   });
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -69,6 +75,19 @@ export default function ChargingStationDashboard() {
     });
   };
 
+  const openFormDialog = (stationId = null) => {
+    setFormDialog({ isOpen: true, stationId });
+  };
+
+  const closeFormDialog = () => {
+    setFormDialog({ isOpen: false, stationId: null });
+  };
+
+  const handleFormSuccess = () => {
+    fetchDashboardData();
+    closeFormDialog();
+  };
+
   const handleActivate = async (station) => {
     try {
       const { activateChargingStation } = await import("../../Services/ChargingStationManagementService/chargingStationService");
@@ -101,8 +120,6 @@ export default function ChargingStationDashboard() {
   const pendingBookings = recentBookings.filter(booking => 
     booking.status?.toLowerCase() === "pending"
   ).length;
-  const totalSlots = chargingStations.reduce((sum, station) => sum + (station.totalSlots || 0), 0);
-  const availableSlots = chargingStations.reduce((sum, station) => sum + (station.availableSlots || 0), 0);
 
   // Get recent bookings (last 5)
   const recentBookingsList = recentBookings
@@ -164,327 +181,242 @@ export default function ChargingStationDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="p-8 overflow-auto">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-1">Manage charging stations and bookings.</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-1">EV Stations Dashboard</h2>
+          <p className="text-gray-600">Manage charging stations and bookings efficiently</p>
+        </div>
+        <div className="flex items-center space-x-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
-            <div className="flex items-center space-x-4">
-              {/* Search Bar */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search stations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="block w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              {/* Add Station Button */}
-              <Link
-                to="/charging-stations/new"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add Station
-              </Link>
-            </div>
+            <input
+              type="text"
+              placeholder="Search stations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
+            />
           </div>
+          {/* Add Station Button */}
+          <button
+            onClick={() => openFormDialog()}
+            className="px-5 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold flex items-center gap-2"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Station
+          </button>
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Total Stations */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Stations</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{totalStations}</div>
-                      <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Active
-                        </span>
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Total Stations */}
+        <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center">
+              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
+            <span className="px-2 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded text-xs font-medium">Active</span>
           </div>
-
-          {/* Active Bookings */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Active Bookings</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{activeBookings}</div>
-                      <div className="ml-2 flex items-baseline text-sm font-semibold text-blue-600">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          Today
-                        </span>
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Pending Approvals */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <svg className="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Pending Approvals</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{pendingBookings}</div>
-                      <div className="ml-2 flex items-baseline text-sm font-semibold text-yellow-600">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          Pending
-                        </span>
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Available Slots */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <svg className="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Available Slots</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{availableSlots}</div>
-                      <div className="ml-2 flex items-baseline text-sm font-semibold text-purple-600">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                          of {totalSlots}
-                        </span>
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+          <p className="text-3xl font-bold text-gray-900 mb-1">{totalStations}</p>
+          <p className="text-sm text-gray-600">Total Stations</p>
         </div>
 
-        {/* Charging Stations Table */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Charging Stations</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              {filteredStations.length} of {chargingStations.length} stations
-            </p>
-          </div>
-          
-          {filteredStations.length === 0 ? (
-            <div className="px-6 py-12 text-center text-gray-500">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        {/* Active Bookings */}
+        <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center">
+              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No stations found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                {searchQuery ? 'Try adjusting your search terms.' : 'Get started by creating a new charging station.'}
-              </p>
-              {!searchQuery && (
-                <div className="mt-6">
-                  <Link
-                    to="/charging-stations/new"
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Add New Station
-                  </Link>
-                </div>
-              )}
             </div>
+            <span className="px-2 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded text-xs font-medium">Today</span>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 mb-1">{activeBookings}</p>
+          <p className="text-sm text-gray-600">Active Bookings</p>
+        </div>
+
+        {/* Pending Approvals */}
+        <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center">
+              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span className="px-2 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded text-xs font-medium">Pending</span>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 mb-1">{pendingBookings}</p>
+          <p className="text-sm text-gray-600">Pending Approvals</p>
+        </div>
+
+        </div>
+
+      {/* Charging Stations Cards */}
+      <div className="bg-white border border-gray-200 rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-semibold text-gray-900">Charging Stations</h3>
+          <p className="text-sm text-gray-500">{filteredStations.length} of {chargingStations.length} stations</p>
+        </div>
+          
+        {filteredStations.length === 0 ? (
+          <div className="py-12 text-center text-gray-500">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No stations found</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchQuery ? 'Try adjusting your search terms.' : 'Get started by creating a new charging station.'}
+            </p>
+            {!searchQuery && (
+              <div className="mt-6">
+                <button
+                  onClick={() => openFormDialog()}
+                  className="px-5 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold inline-flex items-center gap-2"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add New Station
+                </button>
+              </div>
+            )}
+          </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Station ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Station Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Slots
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Operator
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredStations.map((station) => (
-                    <tr key={station.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{station.stationId}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{station.stationName}</div>
-                          <div className="text-sm text-gray-500">{station.location?.address}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {station.location?.city && station.location?.state 
-                            ? `${station.location.city}, ${station.location.state}`
-                            : station.location?.address
-                          }
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {station.location?.latitude && station.location?.longitude 
-                            ? `${station.location.latitude.toFixed(4)}, ${station.location.longitude.toFixed(4)}`
-                            : "No coordinates"
-                          }
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          station.type === "DC" 
-                            ? "bg-blue-100 text-blue-800" 
-                            : "bg-green-100 text-green-800"
-                        }`}>
-                          {station.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {station.availableSlots || 0}/{station.totalSlots || 0}
-                        </div>
-                        <div className="text-xs text-gray-500">Available/Total</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{station.operatorId}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          station.status === "Active" 
-                            ? "bg-green-100 text-green-800" 
-                            : "bg-red-100 text-red-800"
-                        }`}>
-                          {station.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <Link
-                            to={`/charging-stations/edit/${station.id}`}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            Edit
-                          </Link>
-                          <Link
-                            to={`/charging-stations/schedule/${station.id}`}
-                            className="text-purple-600 hover:text-purple-900"
-                          >
-                            Schedule
-                          </Link>
-                          {station.status === "Active" ? (
-                            <button
-                              onClick={() => handleDeactivate(station)}
-                              className="text-orange-600 hover:text-orange-900"
-                              disabled={station.activeBookings > 0}
-                              title={station.activeBookings > 0 ? "Cannot deactivate - has active bookings" : "Deactivate station"}
-                            >
-                              Deactivate
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleActivate(station)}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              Activate
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleDelete(station.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredStations.map((station) => (
+                <div 
+                  key={station.id} 
+                  className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 cursor-pointer"
+                  onClick={() => navigate(`/charging-stations/details/${station.id}`)}
+                >
+                  {/* Station Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-1">{station.stationName}</h4>
+                      <p className="text-sm text-gray-600 font-medium">{station.stationId}</p>
+                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      station.status === "Active" 
+                        ? "bg-green-100 text-green-800" 
+                        : "bg-red-100 text-red-800"
+                    }`}>
+                      {station.status}
+                    </span>
+                  </div>
+
+                  {/* Location Info */}
+                  <div className="mb-4">
+                    <div className="flex items-center text-sm text-gray-600 mb-1">
+                      <svg className="h-4 w-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="font-medium">{station.location?.city && station.location?.state 
+                        ? `${station.location.city}, ${station.location.state}`
+                        : station.location?.address
+                      }</span>
+                    </div>
+                    <p className="text-xs text-gray-500 ml-6">{station.location?.address}</p>
+                    {station.location?.latitude && station.location?.longitude && (
+                      <p className="text-xs text-gray-400 ml-6">
+                        {station.location.latitude.toFixed(4)}, {station.location.longitude.toFixed(4)}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Station Details */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Type</p>
+                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                        station.type === "DC" 
+                          ? "bg-blue-100 text-blue-800" 
+                          : "bg-green-100 text-green-800"
+                      }`}>
+                        {station.type}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Operator</p>
+                      <p className="text-sm font-medium text-gray-900">{station.operatorId}</p>
+                    </div>
+                  </div>
+
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => openFormDialog(station.id)}
+                      className="flex-1 px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <Link
+                      to={`/charging-stations/schedule/${station.id}`}
+                      className="flex-1 px-3 py-2 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-md transition-colors text-center"
+                    >
+                      Schedule
+                    </Link>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+                    {station.status === "Active" ? (
+                      <button
+                        onClick={() => handleDeactivate(station)}
+                        className="flex-1 px-3 py-2 text-xs font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={station.activeBookings > 0}
+                        title={station.activeBookings > 0 ? "Cannot deactivate - has active bookings" : "Deactivate station"}
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleActivate(station)}
+                        className="flex-1 px-3 py-2 text-xs font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-md transition-colors"
+                      >
+                        Activate
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(station.id)}
+                      className="flex-1 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
-        </div>
-
-        {/* Deactivation Modal */}
-        <DeactivationModal
-          isOpen={deactivationModal.isOpen}
-          onClose={closeDeactivationModal}
-          station={deactivationModal.station}
-          onSuccess={handleDeactivationSuccess}
-        />
       </div>
+
+      {/* Form Dialog */}
+      <ChargingStationFormDialog
+        isOpen={formDialog.isOpen}
+        onClose={closeFormDialog}
+        stationId={formDialog.stationId}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* Deactivation Modal */}
+      <DeactivationModal
+        isOpen={deactivationModal.isOpen}
+        onClose={closeDeactivationModal}
+        station={deactivationModal.station}
+        onSuccess={handleDeactivationSuccess}
+      />
     </div>
   );
 }
