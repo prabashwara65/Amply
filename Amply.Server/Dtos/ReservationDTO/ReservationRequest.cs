@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using MongoDB.Driver;
 
 namespace Amply.Server.Dtos
 {
@@ -37,5 +38,8 @@ namespace Amply.Server.Dtos
         [Required]
         [JsonPropertyName("endTime")]
         public TimeSpan EndTime { get; set; }
+
+
+   
     }
 }
