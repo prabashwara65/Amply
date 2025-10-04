@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./Pages/Auth/Register";
 import Login from "./Pages/Auth/Login";
-import Dashboard from "./Pages/Auth/Dashboard/Dashboard";
+import BackofficeDashboard from "./Pages/Auth/Dashboard/BackofficeDashboard/Dashboard";
+import ElectiveVehicleDashboard from "./Pages/Auth/Dashboard/ElectiveVehicleDashboard/Dashboard";
 import ReservationList from "./Pages/Reservation/ReservationList";
 import ReservationForm from "./Pages/Reservation/ReservationForm";
 import { ChargingStationDashboard, ChargingStationList, ScheduleManagement } from "./Pages/ChargingStationManagement";
@@ -28,9 +29,10 @@ function App() {
 
       <Routes>
         {/* Auth Routes */}
+        <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/bodashboard" element={<BackofficeDashboard />} />
+        <Route path="/evdashboard" element={<ElectiveVehicleDashboard />} />
 
         {/* Reservation Routes */}
         <Route path="/reservations" element={<ReservationList />} />
