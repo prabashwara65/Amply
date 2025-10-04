@@ -1,14 +1,26 @@
 // src/Pages/Reservation/ReservationForm.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createReservation, getReservationById, updateReservation } from "../../Services/ReservationService/reservationSevice";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { Zap } from "lucide-react";
+import {
+  createReservation,
+  getReservationById,
+  updateReservation,
+} from "../../Services/ReservationService/reservationSevice";
+import { getActiveChargingStations } from "../../Services/ChargingStationManagementService/chargingStationService";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Zap, CalendarDays } from "lucide-react";
+import Calendar from "react-calendar"; // 📅 install: npm install react-calendar
+import "react-calendar/dist/Calendar.css";
 
 export default function ReservationForm() {
   const navigate = useNavigate();
   const { id } = useParams();
+
+  const [stations, setStations] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDaySlots, setSelectedDaySlots] = useState(null);
+
   const [form, setForm] = useState({
     fullName: "",
     nic: "",
@@ -20,6 +32,18 @@ export default function ReservationForm() {
     endTime: "",
   });
 
+  // Mock weekly slots (replace with API later)
+  const [weekSlots] = useState([
+    { day: "MON", slots: 3, start: "08:00", end: "20:00" },
+    { day: "TUE", slots: 2, start: "09:00", end: "19:00" },
+    { day: "WED", slots: 4, start: "07:30", end: "18:30" },
+    { day: "THU", slots: 1, start: "10:00", end: "17:00" },
+    { day: "FRI", slots: 0, start: "-", end: "-" },
+    { day: "SAT", slots: 5, start: "09:00", end: "21:00" },
+    { day: "SUN", slots: 3, start: "08:00", end: "16:00" },
+  ]);
+
+  // Load reservation if editing
   useEffect(() => {
     if (id) {
       const fetchReservation = async () => {
@@ -30,7 +54,9 @@ export default function ReservationForm() {
           stationId: data.stationId,
           stationName: data.stationName,
           slotNo: data.slotNo,
-          reservationDate: new Date(data.reservationDate).toISOString().slice(0, 10),
+          reservationDate: new Date(data.reservationDate)
+            .toISOString()
+            .slice(0, 10),
           startTime: data.startTime ? data.startTime.slice(0, 5) : "",
           endTime: data.endTime ? data.endTime.slice(0, 5) : "",
         });
@@ -39,10 +65,22 @@ export default function ReservationForm() {
     }
   }, [id]);
 
+  // Handle input changes
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "stationName") {
+      const selectedStation = stations.find((s) => s.stationName === value);
+      setForm({
+        ...form,
+        stationName: value,
+        stationId: selectedStation ? selectedStation.stationId : "",
+      });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
+  // Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
@@ -50,9 +88,9 @@ export default function ReservationForm() {
       slotNo: parseInt(form.slotNo),
       reservationDate: new Date(form.reservationDate).toISOString(),
       startTime: form.startTime + ":00",
-      endTime:  form.endTime + ":00",
+      endTime: form.endTime + ":00",
     };
-    
+
     try {
       if (id) {
         const res = await updateReservation(id, payload);
@@ -63,62 +101,223 @@ export default function ReservationForm() {
       }
       navigate("/reservations");
     } catch (err) {
-      if (err.response?.data?.message) {
-        toast.error(err.response.data.message);
-      } else {
-        toast.error("An error occurred. Please try again.");
-      }
+      toast.error(err.response?.data?.message || "An error occurred.");
     }
   };
 
-  return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
-      <ToastContainer />
+  // Fetch active stations
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        const { data } = await getActiveChargingStations();
+        setStations(data);
+      } catch (err) {
+        toast.error("Failed to fetch stations", err);
+      }
+    };
+    fetchStations();
+  }, []);
 
-      {/* Header */}
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">{id ? "Edit Reservation" : "New Reservation"}</h2>
-        <p className="text-gray-600">Book your EV charging slot quickly and easily.</p>
+  // Handle calendar date click
+ const handleDateClick = (date) => {
+  setSelectedDate(date);
+
+  // Get weekday short form (MON, TUE, etc.)
+  const weekday = date
+    .toLocaleDateString("en-US", { weekday: "short" })
+    .toUpperCase();
+
+  const slotInfo = weekSlots.find((s) => s.day.startsWith(weekday));
+  setSelectedDaySlots(slotInfo || null);
+
+  // Auto-fill form fields based on slot info
+  if (slotInfo && slotInfo.slots > 0) {
+    setForm((prevForm) => ({
+      ...prevForm,
+      reservationDate: date.toISOString().slice(0, 10), 
+      slotNo: 1, 
+      startTime: slotInfo.start !== "-" ? slotInfo.start : "",
+      endTime: slotInfo.end !== "-" ? slotInfo.end : "",
+    }));
+  }
+};
+  return (
+    <div className=" h-screen py-5 px-10 bg-black">
+      <div className="mb-6 text-center">
+        <h2 className="text-3xl font-bold text-white">
+          {id ? "Edit Reservation" : "New Reservation"}
+        </h2>
+        <p className="text-gray-300 mt-2">
+          Fill in your details and book your charging slot.
+        </p>
       </div>
 
-      {/* Form Container */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          {/* Left Column */}
-          <div className="space-y-4">
-            <FormField label="Full Name" name="fullName" value={form.fullName} onChange={handleChange} required />
-            <FormField label="NIC" name="nic" value={form.nic} onChange={handleChange} maxLength={12} />
-            <FormField label="Station Name" name="stationName" value={form.stationName} onChange={handleChange} required />
-            <FormField label="Station ID" name="stationId" value={form.stationId} onChange={handleChange} required />
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-4">
-            <FormField label="Slot Number" name="slotNo" type="number" value={form.slotNo} onChange={handleChange} min={1} max={10} required />
-            <FormField label="Reservation Date" name="reservationDate" type="date" value={form.reservationDate} onChange={handleChange} required />
-            <FormField label="Start Time" name="startTime" type="time" value={form.startTime} onChange={handleChange} required />
-            <FormField label="End Time" name="endTime" type="time" value={form.endTime} onChange={handleChange} required />
-          </div>
-
-          {/* Submit Button */}
-          <div className="col-span-1 md:col-span-2 mt-6 text-center">
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 bg-gray-900 text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition font-semibold shadow-md"
+      <ToastContainer />
+      <div className="flex flex-col md:flex-row gap-10">
+        {/* LEFT: Reservation Form */}
+        <div className="md:w-3/4">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8">
+            <form
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
             >
-              <Zap className="w-5 h-5" />
-              {id ? "Update Reservation" : "Confirm Reservation"}
-            </button>
+              {/* Left column inputs */}
+              <div className="space-y-4">
+                <FormField
+                  label="NIC"
+                  name="nic"
+                  value={form.nic}
+                  onChange={handleChange}
+                  maxLength={12}
+                />
+                <FormField
+                  label="Full Name"
+                  name="fullName"
+                  value={form.fullName}
+                  onChange={handleChange}
+                  required
+                />
+
+                {/* Station Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Station Name
+                  </label>
+                  <select
+                    name="stationName"
+                    value={form.stationName}
+                    onChange={handleChange}
+                    required
+                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
+                  >
+                    <option value="">Select a station</option>
+                    {stations.map((station) => (
+                      <option key={station.id} value={station.stationName}>
+                        {station.stationName} ({station.location.city})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <FormField
+                  label="Station ID"
+                  name="stationId"
+                  value={form.stationId}
+                  onChange={handleChange}
+                  required
+                  readOnly
+                />
+              </div>
+
+              {/* Right column inputs */}
+              <div className="space-y-4">
+                <FormField
+                  label="Reservation Date"
+                  name="reservationDate"
+                  type="date"
+                  value={form.reservationDate}
+                  onChange={handleChange}
+                  required
+                />
+                <FormField
+                  label="Slot Number"
+                  name="slotNo"
+                  type="number"
+                  value={form.slotNo}
+                  onChange={handleChange}
+                  min={1}
+                  max={10}
+                  required
+                />
+                <FormField
+                  label="Start Time"
+                  name="startTime"
+                  type="time"
+                  value={form.startTime}
+                  onChange={handleChange}
+                  required
+                />
+                <FormField
+                  label="End Time"
+                  name="endTime"
+                  type="time"
+                  value={form.endTime}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* Submit Button */}
+              <div className="col-span-1 md:col-span-2 mt-8 text-center">
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 bg-gray-900 text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition font-semibold shadow-md mb-5"
+                >
+                  <Zap className="w-5 h-5" />
+                  {id ? "Update Reservation" : "Confirm Reservation"}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
+
+        {/* RIGHT: Calendar + Slot Info */}
+        <div className="md:w-1/4">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-5">
+            <h3 className="text-lg font-semibold text-center flex items-center justify-center gap-2 mb-4">
+              <CalendarDays className="w-4 h-4 text-gray-700" />
+              Week Availability
+            </h3>
+
+            <Calendar
+              onClickDay={handleDateClick}
+              value={selectedDate}
+              className=" shadow-sm"
+              minDate={new Date()}
+              maxDate={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
+            />
+
+            {selectedDaySlots && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h4 className="text-md font-bold text-black mb-2">
+                  {selectedDate.toDateString()}
+                </h4>
+                <p
+                  className={
+                    selectedDaySlots.slots > 0
+                      ? "text-green-600 font-bold font-mono"
+                      : "text-red-500"
+                  }
+                >
+                  {selectedDaySlots.slots > 0
+                    ? `${selectedDaySlots.slots} slot available`
+                    : "No slots available"}
+                </p>
+                <p className="text-sm fon text-gray-600">
+                  {selectedDaySlots.start} - {selectedDaySlots.end}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-// Reusable Form Field Component
-function FormField({ label, name, value, onChange, type = "text", required, maxLength, min, max }) {
+// Reusable Input Field
+function FormField({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  required,
+  maxLength,
+  min,
+  max,
+  readOnly,
+}) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -131,6 +330,7 @@ function FormField({ label, name, value, onChange, type = "text", required, maxL
         maxLength={maxLength}
         min={min}
         max={max}
+        readOnly={readOnly}
         className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
       />
     </div>

@@ -355,25 +355,74 @@ namespace Amply.Server.Controllers
 
             // This is a placeholder for availability logic
             // You would implement actual availability checking here
-            return Ok(new { 
+            return Ok(new
+            {
                 stationId = id,
                 availableSlots = chargingStation.AvailableSlots,
                 totalSlots = chargingStation.TotalSlots,
                 status = chargingStation.Status
             });
         }
+
+        //get all active charging stations
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActiveStations()
+        {
+
+            //fetch stations with status = "Active"
+            var activeStations = await _chargingStationCollection.Find(cs => cs.Status == "Active").ToListAsync();
+
+            if (!activeStations.Any())
+            {
+                return NotFound(new { message = "No active charging stations found" });
+            }
+            //Map to response DTO
+            var response = activeStations.Select(cs => new ChargingStationResponse
+            {
+                Id = cs.Id,
+                StationId = cs.StationId,
+                StationName = cs.StationName,
+                Location = new LocationResponse
+                {
+                    Address = cs.Location.Address,
+                    Latitude = cs.Location.Latitude,
+                    Longitude = cs.Location.Longitude,
+                    City = cs.Location.City,
+                    State = cs.Location.State,
+                    Country = cs.Location.Country
+                },
+                Type = cs.Type,
+                TotalSlots = cs.TotalSlots,
+                AvailableSlots = cs.AvailableSlots,
+                Schedule = cs.Schedule.Select(s => new ScheduleSlotResponse
+                {
+                    Date = s.Date,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    IsAvailable = s.IsAvailable,
+                    SlotNumber = s.SlotNumber
+                }).ToList(),
+                OperatorId = cs.OperatorId,
+                Status = cs.Status,
+                ActiveBookings = cs.ActiveBookings,
+                Timestamp = cs.Timestamp
+            });
+
+            return Ok(response);
+        }
     }
 
-    public class DeactivationRequest
-    {
-        public string? Reason { get; set; }
+        public class DeactivationRequest
+        {
+            public string? Reason { get; set; }
+        }
+
+        public class ScheduleUpdateRequest
+        {
+            public string Action { get; set; } = string.Empty;
+            public object? Slot { get; set; }
+            public string? SlotId { get; set; }
+            public bool? IsAvailable { get; set; }
+        }
     }
 
-    public class ScheduleUpdateRequest
-    {
-        public string Action { get; set; } = string.Empty;
-        public object? Slot { get; set; }
-        public string? SlotId { get; set; }
-        public bool? IsAvailable { get; set; }
-    }
-}
