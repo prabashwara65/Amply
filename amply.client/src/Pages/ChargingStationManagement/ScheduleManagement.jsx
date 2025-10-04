@@ -13,8 +13,6 @@ export default function ScheduleManagement() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
   const [showAddSlot, setShowAddSlot] = useState(false);
   const [newSlot, setNewSlot] = useState({
-    startTime: "",
-    endTime: "",
     slotNumber: 1,
     isAvailable: true
   });
@@ -44,13 +42,8 @@ export default function ScheduleManagement() {
   const handleAddSlot = async (e) => {
     e.preventDefault();
     
-    if (!newSlot.startTime || !newSlot.endTime) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    if (new Date(newSlot.startTime) >= new Date(newSlot.endTime)) {
-      toast.error("End time must be after start time");
+    if (!newSlot.slotNumber) {
+      toast.error("Please select a slot number");
       return;
     }
 
@@ -62,18 +55,16 @@ export default function ScheduleManagement() {
       };
 
       await updateStationSchedule(id, { action: "add", slot: slotData });
-      toast.success("Time slot added successfully!");
+      toast.success("Slot added successfully!");
       setShowAddSlot(false);
       setNewSlot({
-        startTime: "",
-        endTime: "",
         slotNumber: 1,
         isAvailable: true
       });
       fetchStationData();
     } catch (error) {
       console.error("Error adding slot:", error);
-      toast.error("Failed to add time slot");
+      toast.error("Failed to add slot");
     }
   };
 
@@ -109,13 +100,6 @@ export default function ScheduleManagement() {
     return availability.filter(slot => slot.date === date);
   };
 
-  const formatTime = (timeString) => {
-    return new Date(timeString).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
 
   if (loading) {
     return (
@@ -147,13 +131,13 @@ export default function ScheduleManagement() {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate("/charging-stations")}
+                onClick={() => navigate("/dashboard", { state: { activeNav: "ev-stations" } })}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Back to Stations
+                Back to Dashboard
               </button>
             </div>
           </div>
@@ -236,26 +220,6 @@ export default function ScheduleManagement() {
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
-                <input
-                  type="datetime-local"
-                  value={newSlot.startTime}
-                  onChange={(e) => setNewSlot({...newSlot, startTime: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
-                <input
-                  type="datetime-local"
-                  value={newSlot.endTime}
-                  onChange={(e) => setNewSlot({...newSlot, endTime: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                  required
-                />
-              </div>
               <div className="flex items-end">
                 <button
                   type="submit"
@@ -268,10 +232,10 @@ export default function ScheduleManagement() {
           </div>
         )}
 
-        {/* Time Slots List */}
+        {/* Available Slots List */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Time Slots for {new Date(selectedDate).toLocaleDateString()}
+            Available Slots for {new Date(selectedDate).toLocaleDateString()}
           </h3>
           
           {todaySlots.length === 0 ? (
@@ -296,9 +260,8 @@ export default function ScheduleManagement() {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-6">
                       <div>
-                        <span className="text-sm text-gray-500">Slot #{slot.slotNumber}</span>
                         <div className="text-lg font-semibold text-gray-900">
-                          {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                          Slot #{slot.slotNumber}
                         </div>
                       </div>
                       <div className={`px-3 py-1 rounded-full text-sm font-medium ${

@@ -14,6 +14,16 @@ export const getReservationById = async (id) => {
   return await axios.get(`${API_URL}/${id}`);
 };
 
+// Get reservations by station ID
+export const getReservationsByStationId = async (stationId) => {
+  return await axios.get(`${API_URL}/station/${stationId}`);
+};
+
+// Get reservations by station name
+export const getReservationsByStationName = async (stationName) => {
+  return await axios.get(`${API_URL}/station-name/${encodeURIComponent(stationName)}`);
+};
+
 // Create a new reservation
 export const createReservation = async (data) => {
   return await axios.post(API_URL, data);

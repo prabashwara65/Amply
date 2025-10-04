@@ -95,6 +95,62 @@ namespace Amply.Server.Controllers
             return Ok(response);
         }
 
+        // Get reservations by station ID
+        [HttpGet("station/{stationId}")]
+        public async Task<IActionResult> GetByStationId(string stationId)
+        {
+            var reservations = await _reservationCollection.Find(r => r.StationId == stationId).ToListAsync();
+
+            var response = reservations.Select(r => new ReservationResponse
+            {
+                Id = reservation.Id,
+                ReservationCode = reservation.ReservationCode,
+                FullName = reservation.FullName,
+                NIC = reservation.NIC,
+                StationId = reservation.StationId,
+                StationName = reservation.StationName,
+                SlotNo = reservation.SlotNo,
+                BookingDate = reservation.BookingDate,
+                ReservationDate = reservation.ReservationDate,
+                StartTime = reservation.StartTime,
+                EndTime = reservation.EndTime,
+                Status = reservation.Status,
+                QrCode = reservation.QrCode,
+                CreatedAt = reservation.CreatedAt,
+                UpdatedAt = reservation.UpdatedAt
+            }).ToList();
+
+            return Ok(response);
+        }
+
+        // Get reservations by station name
+        [HttpGet("station-name/{stationName}")]
+        public async Task<IActionResult> GetByStationName(string stationName)
+        {
+            var reservations = await _reservationCollection.Find(r => r.StationName == stationName).ToListAsync();
+
+            var response = reservations.Select(r => new ReservationResponse
+            {
+               Id = reservation.Id,
+                ReservationCode = reservation.ReservationCode,
+                FullName = reservation.FullName,
+                NIC = reservation.NIC,
+                StationId = reservation.StationId,
+                StationName = reservation.StationName,
+                SlotNo = reservation.SlotNo,
+                BookingDate = reservation.BookingDate,
+                ReservationDate = reservation.ReservationDate,
+                StartTime = reservation.StartTime,
+                EndTime = reservation.EndTime,
+                Status = reservation.Status,
+                QrCode = reservation.QrCode,
+                CreatedAt = reservation.CreatedAt,
+                UpdatedAt = reservation.UpdatedAt
+            }).ToList();
+
+            return Ok(response);
+        }
+
         //create a new reservation
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ReservationRequest request)
