@@ -3,6 +3,7 @@ import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap } from
 import HomePage from "../Dashboard/HomePage"
 import ReservationList from "../../Reservation/ReservationList"
 import ChargingStations from "../Dashboard/ChargingStations"
+import UserProfileList from "../../UserProfile/UserProfileList"
 // import Bookings from "./DashboardPages/Bookings"
 
 export default function BackOfficeDashboard() {
@@ -29,8 +30,8 @@ export default function BackOfficeDashboard() {
         return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
       case "reservation":
         return <ReservationList />
-      // case "bookings":
-      //   return <Bookings />
+      case "owners":
+        return <UserProfileList />
       default:
         return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
     }
