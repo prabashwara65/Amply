@@ -24,11 +24,11 @@ export default function DashboardNavbar() {
   }
 
   return (
-    <header className="flex items-center justify-between mb-4 px-4 py-2 bg-gray-50 shadow">
+    <header className="flex items-center justify-between px-4 py-3 bg-gray-50 shadow">
       {/* Dashboard Title */}
       <div className="flex items-center gap-2">
         <Zap className="w-5 h-5 text-gray-900" />
-        <h2 className="text-lg font-bold text-gray-900">Dashboard</h2>
+        <h2 className="text-lg font-bold text-gray-900">{user.role}</h2>
       </div>
 
       {/* Redesigned User Info + Logout */}
