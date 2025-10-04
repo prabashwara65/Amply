@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap, Battery } from "lucide-react"
+
 import HomePage from "../Dashboard/HomePage"
 import ReservationList from "../../Reservation/ReservationList"
-import ChargingStations from "../Dashboard/ChargingStations"
 import ChargingStationDashboard from "../../ChargingStationManagement/ChargingStationDashboard"
-// import Bookings from "./DashboardPages/Bookings"
+import DashboardNavbar from "./DashboardNavbar"
 
 export default function BackOfficeDashboard() {
   const [activeNav, setActiveNav] = useState("home")
   const location = useLocation()
 
-  // Handle navigation state from other pages
   useEffect(() => {
     const state = location.state
-    if (state && state.activeNav) {
-      setActiveNav(state.activeNav)
-    }
+    if (state && state.activeNav) setActiveNav(state.activeNav)
   }, [location.state])
 
   const navItems = [
@@ -30,10 +27,9 @@ export default function BackOfficeDashboard() {
     { id: "settings", label: "Settings", icon: Settings },
   ]
 
-  // Dummy data for Home
-  const recentBookings = [/* same as before */]
-  const chargingStations = [/* same as before */]
-  const recentOwners = [/* same as before */]
+  const recentBookings = []
+  const chargingStations = []
+  const recentOwners = []
 
   const renderContent = () => {
     switch (activeNav) {
@@ -43,8 +39,6 @@ export default function BackOfficeDashboard() {
         return <ReservationList />
       case "ev-stations":
         return <ChargingStationDashboard />
-      // case "bookings":
-      //   return <Bookings />
       default:
         return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
     }
@@ -52,30 +46,21 @@ export default function BackOfficeDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 bg-gray-900 p-6 flex flex-col shadow-xl">
-        {/* Sidebar Logo & User Info */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-900 p-6 flex flex-col shadow-xl sticky top-0 h-screen">
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow">
             <Zap className="w-6 h-6 text-gray-900" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">EV Charge</h1>
-            <p className="text-xs text-gray-400">Admin Portal</p>
+            <h1 className="text-xl font-bold text-white">Amply</h1>
+            <p className="text-sm text-gray-400">Admin Portal</p>
           </div>
         </div>
 
-        {/* User Info */}
-        <div className="flex items-center gap-3 mb-8 p-3 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-            <span className="text-sm font-bold text-gray-900">AD</span>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-white">Admin User</p>
-            <p className="text-xs text-gray-400">Back Office</p>
-          </div>
-        </div>
-
-        <nav className="flex-1 space-y-2">
+        {/* Navigation */}
+        <nav className="flex-1 space-y-3">
           {navItems.map((item) => {
             const Icon = item.icon
             return (
@@ -85,7 +70,7 @@ export default function BackOfficeDashboard() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeNav === item.id
                     ? "bg-white text-gray-900 shadow-md"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white hover:shadow-inner"
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -96,7 +81,18 @@ export default function BackOfficeDashboard() {
         </nav>
       </aside>
 
-      <main className="flex-1 p-8 overflow-auto">{renderContent()}</main>
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto relative">
+        {/* Fixed Top Navbar */}
+        <div className="fixed top-0 left-64 right-0 z-20">
+          <DashboardNavbar />
+        </div>
+
+        {/* Page Content */}
+        <div className="pt-24 px-6 pb-6">
+          <div className="space-y-6">{renderContent()}</div>
+        </div>
+      </main>
     </div>
   )
 }
