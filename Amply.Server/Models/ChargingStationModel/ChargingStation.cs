@@ -1,5 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Amply.Server.Models
@@ -83,6 +85,14 @@ namespace Amply.Server.Models
         [BsonElement("date")]
         [BsonRequired]
         public DateTime Date { get; set; }
+
+        [BsonElement("startTime")]
+        [BsonRequired]
+        public TimeSpan StartTime { get; set; }   
+
+        [BsonElement("endTime")]
+        [BsonRequired]
+        public TimeSpan EndTime { get; set; }   
 
         [BsonElement("isAvailable")]
         [BsonRequired]
