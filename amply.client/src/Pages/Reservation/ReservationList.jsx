@@ -5,11 +5,15 @@ import { Link } from "react-router-dom";
 import UiTable from "../../Components/Table";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ChevronRight, Trash2, Edit2, QrCode } from "lucide-react";
+import { ChevronRight, Trash2, Edit2, QrCode, Search } from "lucide-react";
 
 export default function ReservationList() {
   const [reservations, setReservations] = useState([]);
   const [selectedQr, setSelectedQr] = useState(null);
+  const [filteredReservations, setFilteredReservations] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
   // Fetch all reservations
   const fetchReservations = async () => {
@@ -63,6 +67,25 @@ export default function ReservationList() {
         fetchReservations();
     }, []);
 
+  //serach handler
+  useEffect(() => {
+    const query = searchQuery.toLowerCase();
+    const filtered = reservations.filter(r =>
+      r.fullName.toLowerCase().includes(query) ||
+      r.nic.includes(query) ||
+      r.stationName.toLowerCase().includes(query) ||
+      r.reservationCode.toLowerCase().includes(query)
+    );
+    setFilteredReservations(filtered);
+    setCurrentPage(1); 
+  }, [searchQuery, reservations]);
+
+  //Pagination
+  const totalPages = Math.ceil(filteredReservations.length / itemsPerPage);
+  const paginatedData = filteredReservations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
 
   // Counts for summary cards
@@ -117,7 +140,9 @@ export default function ReservationList() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">Reservations Dashboard</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-1">
+            Reservations Dashboard
+          </h2>
           <p className="text-gray-600">Manage all reservations efficiently</p>
         </div>
         <Link
@@ -132,11 +157,15 @@ export default function ReservationList() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg p-6 text-center">
           <p className="text-gray-500 font-medium">Pending Reservations</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{pendingCount}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {pendingCount}
+          </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg p-6 text-center">
           <p className="text-gray-500 font-medium">Confirmed Reservations</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{confirmedCount}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {confirmedCount}
+          </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg p-6 text-center">
           <p className="text-gray-500 font-medium">Today's Reservations</p>
@@ -144,34 +173,82 @@ export default function ReservationList() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="flex justify-end mb-4">
+        <div className="relative w-full md:w-1/3">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <Search className="w-5 h-5 text-gray-400" />
+          </span>
+          <input
+            type="text"
+            placeholder="Search by name, NIC, code, station..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full border border-gray-300 rounded pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          />
+        </div>
+      </div>
+
       {/* Table Section */}
       <div className="bg-white border border-gray-200 rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-gray-900">All Reservations</h3>
+          <h3 className="text-xl font-semibold text-gray-900">
+            All Reservations
+          </h3>
           <p className="text-sm text-gray-500">{reservations.length} total</p>
         </div>
 
-        <UiTable
-          title=""
-          columns={columns}
-          data={reservations}
-        />
+        <UiTable title="" columns={columns} data={paginatedData} />
       </div>
-          {/* QR Code Modal */}
-          {selectedQr && (
-              <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-                  <div className="bg-gray-300 p-4 rounded-lg shadow-lg pointer-events-auto flex flex-col items-center gap-3">
-                      <h4 className="text-lg font-semibold text-gray-800">Reservation QR</h4>
-                      <img src={selectedQr} alt="QR Code" className="w-40 h-40" />
-                      <button
-                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                          onClick={() => setSelectedQr(null)}
-                      >
-                          Close
-                      </button>
-                  </div>
-              </div>
-          )}
+
+      {/* Pagination */}
+      <div className="flex justify-center items-center gap-3 mt-4">
+        <button
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => prev - 1)}
+        >
+          Previous
+        </button>
+        {[...Array(totalPages)].map((_, i) => (
+          <button
+            key={i}
+            className={`px-3 py-1 rounded ${
+              currentPage === i + 1
+                ? "bg-gray-800 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+        >
+          Next
+        </button>
+      </div>
+
+      {/* QR Code Modal */}
+      {selectedQr && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div className="bg-gray-300 p-4 rounded-lg shadow-lg pointer-events-auto flex flex-col items-center gap-3">
+            <h4 className="text-lg font-semibold text-gray-800">
+              Reservation QR
+            </h4>
+            <img src={selectedQr} alt="QR Code" className="w-40 h-40" />
+            <button
+              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+              onClick={() => setSelectedQr(null)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
