@@ -55,12 +55,6 @@ export default function RegisterPage() {
         <div className="bg-white rounded-2xl shadow-lg w-full p-6 space-y-6">
 
        
-            
-            {/* <div>
-              <LoginGreeting />
-            </div> */}
-          
-
           {/* Registration Form */}
           <h2 className="text-2xl font-bold mb-4 text-center text-gray-900">Sign Up</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,9 +113,9 @@ export default function RegisterPage() {
             Already have an account?{" "}
             <span
               className="text-blue-600 hover:underline cursor-pointer"
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/")}
             >
-              Sign In
+              Log In
             </span>
           </p>
         </div>
