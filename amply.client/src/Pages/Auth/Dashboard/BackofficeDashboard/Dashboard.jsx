@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap, Battery } from "lucide-react"
 
-import HomePage from "../Dashboard/HomePage"
-import ReservationList from "../../Reservation/ReservationList"
-import ChargingStationDashboard from "../../ChargingStationManagement/ChargingStationDashboard"
+import HomePage from "./HomePage"
+import ReservationList from "../../../Reservation/ReservationList"
+import ChargingStationDashboard from "../../../ChargingStationManagement/ChargingStationDashboard"
 import DashboardNavbar from "./DashboardNavbar"
 
 export default function BackOfficeDashboard() {

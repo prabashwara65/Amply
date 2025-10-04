@@ -31,21 +31,23 @@ export default function DashboardNavbar() {
         <h2 className="text-lg font-bold text-gray-900">Dashboard</h2>
       </div>
 
-      {/* User Info + Logout */}
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 p-1 bg-gray-800 border border-gray-700 rounded-md">
+      {/* Redesigned User Info + Logout */}
+      <div className="flex items-center gap-3">
+        {/* User Card */}
+        <div className="flex items-center gap-2 px-2 py-1 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition">
           <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-xs font-bold text-gray-900">
             {initials}
           </div>
-          <div className="flex flex-col text-xs text-white">
-            <span>{user.name}</span>
-            <span className="text-gray-400">{user.role}</span>
+          <div className="flex flex-col text-xs text-white leading-tight">
+            <span className="font-semibold truncate max-w-[80px]">{user.name}</span>
+            <span className="text-gray-400 truncate max-w-[80px]">{user.role}</span>
           </div>
         </div>
 
+        {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1 px-2 py-1 border border-red-600 rounded text-red-600 text-xs hover:bg-red-600 hover:text-white transition"
+          className="flex items-center gap-1 px-3 py-2 border border-red-600 rounded-md text-md bg-red-600 text-white transition"
         >
           <LogOut className="w-3 h-3" />
           Logout
