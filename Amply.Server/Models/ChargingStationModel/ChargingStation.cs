@@ -1,5 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Amply.Server.Models
@@ -27,11 +29,11 @@ namespace Amply.Server.Models
 
         [BsonElement("totalSlots")]
         [BsonRequired, Range(1, 50)]
-        public int TotalSlots { get; set; } = 1;
+        public int TotalSlots { get; set; } = 35; // 7 days * 5 slots = 35 total slots
 
         [BsonElement("availableSlots")]
         [BsonRequired, Range(0, 50)]
-        public int AvailableSlots { get; set; } = 1;
+        public int AvailableSlots { get; set; } = 35; // Initially all slots are available
 
         [BsonElement("schedule")]
         public List<ScheduleSlot> Schedule { get; set; } = new List<ScheduleSlot>();
@@ -86,11 +88,11 @@ namespace Amply.Server.Models
 
         [BsonElement("startTime")]
         [BsonRequired]
-        public string StartTime { get; set; } = string.Empty;
+        public TimeSpan StartTime { get; set; }   
 
         [BsonElement("endTime")]
         [BsonRequired]
-        public string EndTime { get; set; } = string.Empty;
+        public TimeSpan EndTime { get; set; }   
 
         [BsonElement("isAvailable")]
         [BsonRequired]

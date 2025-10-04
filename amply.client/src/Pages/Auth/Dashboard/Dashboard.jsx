@@ -1,16 +1,28 @@
-import React, { useState } from "react"
-import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import { useLocation } from "react-router-dom"
+import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap, Battery } from "lucide-react"
 import HomePage from "../Dashboard/HomePage"
 import ReservationList from "../../Reservation/ReservationList"
 import ChargingStations from "../Dashboard/ChargingStations"
+import ChargingStationDashboard from "../../ChargingStationManagement/ChargingStationDashboard"
 // import Bookings from "./DashboardPages/Bookings"
 
 export default function BackOfficeDashboard() {
   const [activeNav, setActiveNav] = useState("home")
+  const location = useLocation()
+
+  // Handle navigation state from other pages
+  useEffect(() => {
+    const state = location.state
+    if (state && state.activeNav) {
+      setActiveNav(state.activeNav)
+    }
+  }, [location.state])
 
   const navItems = [
     { id: "home", label: "Dashboard", icon: Home },
     { id: "reservation", label: "Reservation", icon: MapPin },
+    { id: "ev-stations", label: "EV Stations", icon: Battery },
     { id: "bookings", label: "Booking Management", icon: Calendar },
     { id: "owners", label: "EV Owners", icon: Users },
     { id: "operators", label: "Station Operators", icon: UserCog },
@@ -29,6 +41,8 @@ export default function BackOfficeDashboard() {
         return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
       case "reservation":
         return <ReservationList />
+      case "ev-stations":
+        return <ChargingStationDashboard />
       // case "bookings":
       //   return <Bookings />
       default:

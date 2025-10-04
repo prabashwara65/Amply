@@ -49,9 +49,9 @@ namespace Amply.Server.Dtos
     {
         public DateTime Date { get; set; }
 
-        public string StartTime { get; set; } = string.Empty;
+        public TimeSpan StartTime { get; set; }   
 
-        public string EndTime { get; set; } = string.Empty;
+        public TimeSpan EndTime { get; set; }     
 
         public bool IsAvailable { get; set; } = true;
 
