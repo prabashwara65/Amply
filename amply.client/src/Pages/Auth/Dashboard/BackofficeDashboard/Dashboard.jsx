@@ -1,30 +1,31 @@
-<<<<<<< HEAD:amply.client/src/Pages/Auth/Dashboard/Dashboard.jsx
-import React, { useState } from "react"
-import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap } from "lucide-react"
-import HomePage from "../Dashboard/HomePage"
-import ReservationList from "../../Reservation/ReservationList"
-import ChargingStations from "../Dashboard/ChargingStations"
-import UserProfileList from "../../UserProfile/UserProfileList"
-// import Bookings from "./DashboardPages/Bookings"
-=======
-import React, { useState, useEffect } from "react"
-import { useLocation } from "react-router-dom"
-import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap, Battery } from "lucide-react"
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import {
+  Home,
+  MapPin,
+  Calendar,
+  Users,
+  UserCog,
+  BarChart3,
+  Settings,
+  Zap,
+  Battery,
+} from "lucide-react";
 
-import HomePage from "./HomePage"
-import ReservationList from "../../../Reservation/ReservationList"
-import ChargingStationDashboard from "../../../ChargingStationManagement/ChargingStationDashboard"
-import DashboardNavbar from "./DashboardNavbar"
->>>>>>> 5b7faa558916836eed1fb1468ce314d573dd86da:amply.client/src/Pages/Auth/Dashboard/BackofficeDashboard/Dashboard.jsx
+import HomePage from "./HomePage";
+import ReservationList from "../../../Reservation/ReservationList";
+import ChargingStationDashboard from "../../../ChargingStationManagement/ChargingStationDashboard";
+import UserProfileList from "../../../UserProfile/UserProfileList";
+import DashboardNavbar from "./DashboardNavbar";
 
 export default function BackOfficeDashboard() {
-  const [activeNav, setActiveNav] = useState("home")
-  const location = useLocation()
+  const [activeNav, setActiveNav] = useState("home");
+  const location = useLocation();
 
   useEffect(() => {
-    const state = location.state
-    if (state && state.activeNav) setActiveNav(state.activeNav)
-  }, [location.state])
+    const state = location.state;
+    if (state && state.activeNav) setActiveNav(state.activeNav);
+  }, [location.state]);
 
   const navItems = [
     { id: "home", label: "Dashboard", icon: Home },
@@ -35,29 +36,38 @@ export default function BackOfficeDashboard() {
     { id: "operators", label: "Station Operators", icon: UserCog },
     { id: "reports", label: "Reports", icon: BarChart3 },
     { id: "settings", label: "Settings", icon: Settings },
-  ]
+  ];
 
-  const recentBookings = []
-  const chargingStations = []
-  const recentOwners = []
+  const recentBookings = [];
+  const chargingStations = [];
+  const recentOwners = [];
 
   const renderContent = () => {
     switch (activeNav) {
       case "home":
-        return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
+        return (
+          <HomePage
+            recentBookings={recentBookings}
+            chargingStations={chargingStations}
+            recentOwners={recentOwners}
+          />
+        );
       case "reservation":
-        return <ReservationList />
-<<<<<<< HEAD:amply.client/src/Pages/Auth/Dashboard/Dashboard.jsx
-      case "owners":
-        return <UserProfileList />
-=======
+        return <ReservationList />;
       case "ev-stations":
-        return <ChargingStationDashboard />
->>>>>>> 5b7faa558916836eed1fb1468ce314d573dd86da:amply.client/src/Pages/Auth/Dashboard/BackofficeDashboard/Dashboard.jsx
+        return <ChargingStationDashboard />;
+      case "owners":
+        return <UserProfileList />;
       default:
-        return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
+        return (
+          <HomePage
+            recentBookings={recentBookings}
+            chargingStations={chargingStations}
+            recentOwners={recentOwners}
+          />
+        );
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -77,7 +87,7 @@ export default function BackOfficeDashboard() {
         {/* Navigation */}
         <nav className="flex-1 space-y-3">
           {navItems.map((item) => {
-            const Icon = item.icon
+            const Icon = item.icon;
             return (
               <button
                 key={item.id}
@@ -91,7 +101,7 @@ export default function BackOfficeDashboard() {
                 <Icon className="w-5 h-5" />
                 <span className="text-sm font-medium">{item.label}</span>
               </button>
-            )
+            );
           })}
         </nav>
       </aside>
@@ -109,5 +119,5 @@ export default function BackOfficeDashboard() {
         </div>
       </main>
     </div>
-  )
+  );
 }
