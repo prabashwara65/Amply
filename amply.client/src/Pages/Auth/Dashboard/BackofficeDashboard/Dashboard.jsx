@@ -31,8 +31,6 @@ export default function BackOfficeDashboard() {
     { id: "home", label: "Dashboard", icon: Home },
     { id: "reservation", label: "Reservation", icon: MapPin },
     { id: "ev-stations", label: "EV Stations", icon: Battery },
-    { id: "bookings", label: "Booking Management", icon: Calendar },
-    { id: "owners", label: "EV Owners", icon: Users },
     { id: "operators", label: "Station Operators", icon: UserCog },
     { id: "reports", label: "Reports", icon: BarChart3 },
     { id: "settings", label: "Settings", icon: Settings },

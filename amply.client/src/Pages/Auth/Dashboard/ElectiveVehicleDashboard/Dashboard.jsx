@@ -1,48 +1,62 @@
-import React, { useState, useEffect } from "react"
-import { useLocation } from "react-router-dom"
-import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap, Battery } from "lucide-react"
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import {
+  Home,
+  MapPin,
+  Calendar,
+  Users,
+  UserCog,
+  BarChart3,
+  Settings,
+  Zap,
+  Battery,
+} from "lucide-react";
 
-import HomePage from "./HomePage"
-import ReservationList from "../../../Reservation/ReservationList"
-import ChargingStationDashboard from "../../../ChargingStationManagement/ChargingStationDashboard"
-import DashboardNavbar from "./DashboardNavbar"
+import HomePage from "./HomePage";
+import UserProfileList from "../../../UserProfile/UserProfileList";
+import DashboardNavbar from "./DashboardNavbar";
 
 export default function BackOfficeDashboard() {
-  const [activeNav, setActiveNav] = useState("home")
-  const location = useLocation()
+  const [activeNav, setActiveNav] = useState("home");
+  const location = useLocation();
 
   useEffect(() => {
-    const state = location.state
-    if (state && state.activeNav) setActiveNav(state.activeNav)
-  }, [location.state])
+    const state = location.state;
+    if (state && state.activeNav) setActiveNav(state.activeNav);
+  }, [location.state]);
 
   const navItems = [
     { id: "home", label: "Dashboard", icon: Home },
-    { id: "reservation", label: "Reservation", icon: MapPin },
-    { id: "ev-stations", label: "EV Stations", icon: Battery },
-    { id: "bookings", label: "Booking Management", icon: Calendar },
     { id: "owners", label: "EV Owners", icon: Users },
-    { id: "operators", label: "Station Operators", icon: UserCog },
-    { id: "reports", label: "Reports", icon: BarChart3 },
-    { id: "settings", label: "Settings", icon: Settings },
-  ]
 
-  const recentBookings = []
-  const chargingStations = []
-  const recentOwners = []
+  ];
+
+  const recentBookings = [];
+  const chargingStations = [];
+  const recentOwners = [];
 
   const renderContent = () => {
     switch (activeNav) {
       case "home":
-        return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
-      case "reservation":
-        return <ReservationList />
-      case "ev-stations":
-        return <ChargingStationDashboard />
+        return (
+          <HomePage
+            recentBookings={recentBookings}
+            chargingStations={chargingStations}
+            recentOwners={recentOwners}
+          />
+        );
+      case "owners":
+        return <UserProfileList />;
       default:
-        return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
+        return (
+          <HomePage
+            recentBookings={recentBookings}
+            chargingStations={chargingStations}
+            recentOwners={recentOwners}
+          />
+        );
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -62,7 +76,7 @@ export default function BackOfficeDashboard() {
         {/* Navigation */}
         <nav className="flex-1 space-y-3">
           {navItems.map((item) => {
-            const Icon = item.icon
+            const Icon = item.icon;
             return (
               <button
                 key={item.id}
@@ -76,7 +90,7 @@ export default function BackOfficeDashboard() {
                 <Icon className="w-5 h-5" />
                 <span className="text-sm font-medium">{item.label}</span>
               </button>
-            )
+            );
           })}
         </nav>
       </aside>
@@ -94,5 +108,5 @@ export default function BackOfficeDashboard() {
         </div>
       </main>
     </div>
-  )
+  );
 }
