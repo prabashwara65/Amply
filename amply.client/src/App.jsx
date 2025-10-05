@@ -5,8 +5,8 @@ import BackofficeDashboard from "./Pages/Auth/Dashboard/BackofficeDashboard/Dash
 import ElectiveVehicleDashboard from "./Pages/Auth/Dashboard/ElectiveVehicleDashboard/Dashboard";
 import ReservationList from "./Pages/Reservation/ReservationList";
 import ReservationForm from "./Pages/Reservation/ReservationForm";
-import { ChargingStationDashboard, ChargingStationList, ChargingStationForm, ScheduleManagement } from "./Pages/ChargingStationManagement";
-
+import { ChargingStationDashboard, ChargingStationList, ScheduleManagement } from "./Pages/ChargingStationManagement";
+import StationDetails from "./Pages/ChargingStationManagement/StationDetails";
 import UserProfileList from "./Pages/UserProfile/UserProfileList";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
