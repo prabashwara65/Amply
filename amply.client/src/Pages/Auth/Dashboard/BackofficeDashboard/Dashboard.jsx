@@ -1,3 +1,12 @@
+<<<<<<< HEAD:amply.client/src/Pages/Auth/Dashboard/Dashboard.jsx
+import React, { useState } from "react"
+import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap } from "lucide-react"
+import HomePage from "../Dashboard/HomePage"
+import ReservationList from "../../Reservation/ReservationList"
+import ChargingStations from "../Dashboard/ChargingStations"
+import UserProfileList from "../../UserProfile/UserProfileList"
+// import Bookings from "./DashboardPages/Bookings"
+=======
 import React, { useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { Home, MapPin, Calendar, Users, UserCog, BarChart3, Settings, Zap, Battery } from "lucide-react"
@@ -6,6 +15,7 @@ import HomePage from "./HomePage"
 import ReservationList from "../../../Reservation/ReservationList"
 import ChargingStationDashboard from "../../../ChargingStationManagement/ChargingStationDashboard"
 import DashboardNavbar from "./DashboardNavbar"
+>>>>>>> 5b7faa558916836eed1fb1468ce314d573dd86da:amply.client/src/Pages/Auth/Dashboard/BackofficeDashboard/Dashboard.jsx
 
 export default function BackOfficeDashboard() {
   const [activeNav, setActiveNav] = useState("home")
@@ -37,8 +47,13 @@ export default function BackOfficeDashboard() {
         return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
       case "reservation":
         return <ReservationList />
+<<<<<<< HEAD:amply.client/src/Pages/Auth/Dashboard/Dashboard.jsx
+      case "owners":
+        return <UserProfileList />
+=======
       case "ev-stations":
         return <ChargingStationDashboard />
+>>>>>>> 5b7faa558916836eed1fb1468ce314d573dd86da:amply.client/src/Pages/Auth/Dashboard/BackofficeDashboard/Dashboard.jsx
       default:
         return <HomePage recentBookings={recentBookings} chargingStations={chargingStations} recentOwners={recentOwners} />
     }
