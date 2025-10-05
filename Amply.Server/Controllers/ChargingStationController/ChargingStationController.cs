@@ -17,6 +17,30 @@ namespace Amply.Server.Controllers
             _chargingStationCollection = database.GetCollection<ChargingStation>("chargingStations");
         }
 
+        // Generate default schedule for new stations (7 days, 5 slots each)
+        private List<ScheduleSlot> GenerateDefaultSchedule()
+        {
+            var schedule = new List<ScheduleSlot>();
+            var today = DateTime.Today;
+            
+            for (int day = 0; day < 7; day++)
+            {
+                var currentDate = today.AddDays(day);
+                
+                for (int slot = 1; slot <= 5; slot++)
+                {
+                    schedule.Add(new ScheduleSlot
+                    {
+                        Date = currentDate,
+                        IsAvailable = true,
+                        SlotNumber = slot
+                    });
+                }
+            }
+            
+            return schedule;
+        }
+
         // Test endpoint
         [HttpGet("test")]
         public IActionResult Test()
@@ -111,11 +135,8 @@ namespace Amply.Server.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Validate available slots
-            if (request.AvailableSlots > request.TotalSlots)
-            {
-                return BadRequest(new { message = "Available slots cannot be greater than total slots." });
-            }
+            // Generate default schedule if not provided
+            var defaultSchedule = GenerateDefaultSchedule();
 
             // Check if stationId already exists
             var existingStation = await _chargingStationCollection.Find(cs => cs.StationId == request.StationId).FirstOrDefaultAsync();
@@ -139,16 +160,9 @@ namespace Amply.Server.Controllers
                     Country = request.Location.Country ?? string.Empty
                 },
                 Type = request.Type,
-                TotalSlots = request.TotalSlots,
-                AvailableSlots = request.AvailableSlots,
-                Schedule = request.Schedule.Select(s => new ScheduleSlot
-                {
-                    Date = s.Date,
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
-                    IsAvailable = s.IsAvailable,
-                    SlotNumber = s.SlotNumber
-                }).ToList(),
+                TotalSlots = 35, // 7 days * 5 slots = 35 total slots
+                AvailableSlots = 35, // Initially all slots are available
+                Schedule = defaultSchedule, // Use generated default schedule
                 OperatorId = request.OperatorId,
                 Status = request.Status,
                 ActiveBookings = 0,
@@ -341,25 +355,74 @@ namespace Amply.Server.Controllers
 
             // This is a placeholder for availability logic
             // You would implement actual availability checking here
-            return Ok(new { 
+            return Ok(new
+            {
                 stationId = id,
                 availableSlots = chargingStation.AvailableSlots,
                 totalSlots = chargingStation.TotalSlots,
                 status = chargingStation.Status
             });
         }
+
+        //get all active charging stations
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActiveStations()
+        {
+
+            //fetch stations with status = "Active"
+            var activeStations = await _chargingStationCollection.Find(cs => cs.Status == "Active").ToListAsync();
+
+            if (!activeStations.Any())
+            {
+                return NotFound(new { message = "No active charging stations found" });
+            }
+            //Map to response DTO
+            var response = activeStations.Select(cs => new ChargingStationResponse
+            {
+                Id = cs.Id,
+                StationId = cs.StationId,
+                StationName = cs.StationName,
+                Location = new LocationResponse
+                {
+                    Address = cs.Location.Address,
+                    Latitude = cs.Location.Latitude,
+                    Longitude = cs.Location.Longitude,
+                    City = cs.Location.City,
+                    State = cs.Location.State,
+                    Country = cs.Location.Country
+                },
+                Type = cs.Type,
+                TotalSlots = cs.TotalSlots,
+                AvailableSlots = cs.AvailableSlots,
+                Schedule = cs.Schedule.Select(s => new ScheduleSlotResponse
+                {
+                    Date = s.Date,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    IsAvailable = s.IsAvailable,
+                    SlotNumber = s.SlotNumber
+                }).ToList(),
+                OperatorId = cs.OperatorId,
+                Status = cs.Status,
+                ActiveBookings = cs.ActiveBookings,
+                Timestamp = cs.Timestamp
+            });
+
+            return Ok(response);
+        }
     }
 
-    public class DeactivationRequest
-    {
-        public string? Reason { get; set; }
+        public class DeactivationRequest
+        {
+            public string? Reason { get; set; }
+        }
+
+        public class ScheduleUpdateRequest
+        {
+            public string Action { get; set; } = string.Empty;
+            public object? Slot { get; set; }
+            public string? SlotId { get; set; }
+            public bool? IsAvailable { get; set; }
+        }
     }
 
-    public class ScheduleUpdateRequest
-    {
-        public string Action { get; set; } = string.Empty;
-        public object? Slot { get; set; }
-        public string? SlotId { get; set; }
-        public bool? IsAvailable { get; set; }
-    }
-}

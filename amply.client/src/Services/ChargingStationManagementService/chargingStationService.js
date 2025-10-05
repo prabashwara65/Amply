@@ -48,3 +48,8 @@ export const updateStationSchedule = async (id, scheduleData) => {
 export const getStationAvailability = async (id) => {
   return await axios.get(`${API_URL}/${id}/availability`);
 };
+
+//get all active stations
+export const getActiveChargingStations = async () => {
+    return await axios.get(`${API_URL}/active`);
+}
