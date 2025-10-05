@@ -13,8 +13,6 @@ import {
 } from "lucide-react";
 
 import HomePage from "./HomePage";
-import ReservationList from "../../../Reservation/ReservationList";
-import ChargingStationDashboard from "../../../ChargingStationManagement/ChargingStationDashboard";
 import UserProfileList from "../../../UserProfile/UserProfileList";
 import DashboardNavbar from "./DashboardNavbar";
 
@@ -29,13 +27,8 @@ export default function BackOfficeDashboard() {
 
   const navItems = [
     { id: "home", label: "Dashboard", icon: Home },
-    { id: "reservation", label: "Reservation", icon: MapPin },
-    { id: "ev-stations", label: "EV Stations", icon: Battery },
-    { id: "bookings", label: "Booking Management", icon: Calendar },
     { id: "owners", label: "EV Owners", icon: Users },
-    { id: "operators", label: "Station Operators", icon: UserCog },
-    { id: "reports", label: "Reports", icon: BarChart3 },
-    { id: "settings", label: "Settings", icon: Settings },
+
   ];
 
   const recentBookings = [];
@@ -52,10 +45,6 @@ export default function BackOfficeDashboard() {
             recentOwners={recentOwners}
           />
         );
-      case "reservation":
-        return <ReservationList />;
-      case "ev-stations":
-        return <ChargingStationDashboard />;
       case "owners":
         return <UserProfileList />;
       default:
