@@ -12,6 +12,8 @@ namespace Amply.Server.Dtos
 
         public string? NIC { get; set; }
 
+        public string? VehicleNumber{ get; set; }
+
         public string StationId { get; set; } = string.Empty;
 
         public string StationName { get; set; } = string.Empty;

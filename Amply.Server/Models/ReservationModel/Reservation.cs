@@ -22,6 +22,11 @@ namespace Amply.Server.Models
         [StringLength(12, MinimumLength = 10)]
         public string NIC { get; set; } = string.Empty;
 
+        [BsonElement("vehicleNumber")]
+        [Required]
+        public string VehicleNumber { get; set; } = string.Empty;
+
+
         [BsonElement("stationId")]
         [Required]
         public string StationId { get; set; } = string.Empty;

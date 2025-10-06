@@ -16,6 +16,10 @@ namespace Amply.Server.Dtos
         public string? NIC { get; set; }
 
         [Required]
+        [JsonPropertyName("vehicleNumber")]
+        public string? VehicleNumber { get; set; }
+
+        [Required]
         [JsonPropertyName("stationId")]
         public string StationId { get; set; } = string.Empty;
 
