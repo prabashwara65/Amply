@@ -155,7 +155,7 @@ export default function StationDetails() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Station Not Found</h2>
           <p className="text-gray-600 mb-4">The charging station you're looking for doesn't exist.</p>
           <button
-            onClick={() => navigate('/dashboard', { state: { activeNav: 'ev-stations' } })}
+            onClick={() => navigate('/bodashboard', { state: { activeNav: 'ev-stations' } })}
             className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
           >
             Back to Dashboard
@@ -178,7 +178,7 @@ export default function StationDetails() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <button
-              onClick={() => navigate('/dashboard', { state: { activeNav: 'ev-stations' } })}
+              onClick={() => navigate('/bodashboard', { state: { activeNav: 'ev-stations' } })}
               className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
             >
               <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

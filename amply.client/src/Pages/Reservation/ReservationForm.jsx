@@ -8,7 +8,7 @@ import {
 import { getActiveChargingStations } from "../../Services/ChargingStationManagementService/chargingStationService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Zap, CalendarDays, MapPin, User, IdCard, Clock, Plug } from "lucide-react";
+import { Zap, CalendarDays, MapPin, User, IdCard, Clock, Plug, Car} from "lucide-react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
@@ -23,6 +23,7 @@ export default function ReservationForm() {
   const [form, setForm] = useState({
     fullName: "",
     nic: "",
+    vehicleNumber : "",
     stationId: "",
     stationName: "",
     slotNo: 1,
@@ -49,6 +50,7 @@ export default function ReservationForm() {
         setForm({
           fullName: data.fullName,
           nic: data.nic || "",
+          vehicleNumber: data.vehicleNumber || "",
           stationId: data.stationId,
           stationName: data.stationName,
           slotNo: data.slotNo,
@@ -96,9 +98,10 @@ export default function ReservationForm() {
     const slotInfo = weekSlots.find((s) => s.day.startsWith(weekday));
     setSelectedDaySlots(slotInfo || null);
     if (slotInfo && slotInfo.slots > 0) {
+      const formattedDate = date.toLocaleDateString("en-CA"); 
       setForm((prev) => ({
         ...prev,
-        reservationDate: date.toISOString().slice(0, 10),
+        reservationDate: formattedDate,
         slotNo: 1,
         startTime: slotInfo.start !== "-" ? slotInfo.start : "",
         endTime: slotInfo.end !== "-" ? slotInfo.end : "",
@@ -154,6 +157,8 @@ export default function ReservationForm() {
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField icon={<IdCard />} label="NIC" name="nic" value={form.nic} onChange={handleChange} required />
             <InputField icon={<User />} label="Full Name" name="fullName" value={form.fullName} onChange={handleChange} required />
+            <InputField icon={<Car/> }label= "Vehicle Number" name="vehicleNumber" value={form.vehicleNumber} onChange={handleChange} required/>
+            <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
             <SelectField
               label="Station Name"
               name="stationName"
@@ -166,6 +171,7 @@ export default function ReservationForm() {
             <InputField label="Slot Number" name="slotNo" type="number" value={form.slotNo} onChange={handleChange} min={1} max={10} required />
             <InputField icon={<Clock />} label="Start Time" name="startTime" type="time" value={form.startTime} onChange={handleChange} required />
             <InputField icon={<Clock />} label="End Time" name="endTime" type="time" value={form.endTime} onChange={handleChange} required />
+            </div>
 
             <div className="col-span-1 md:col-span-2 text-center mt-6">
               <button
