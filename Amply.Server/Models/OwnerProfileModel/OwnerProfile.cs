@@ -27,6 +27,10 @@ namespace Amply.Server.Models
         [Required, StringLength(15)]
         public string Phone { get; set; } = string.Empty;
 
+        [BsonElement("role")]
+        [Required]
+        public string Role { get; set; } = "EvOwner"; 
+
         [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

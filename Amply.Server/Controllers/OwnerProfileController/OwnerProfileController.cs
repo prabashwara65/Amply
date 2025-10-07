@@ -27,8 +27,9 @@ namespace Amply.Server.Controllers
                 NIC = o.NIC,
                 FullName = o.FullName,
                 Email = o.Email,
+                Password = o.Password, // show password
                 Phone = o.Phone,
-                Password = o.Password, // include password
+                Role = o.Role,
                 CreatedAt = o.CreatedAt,
                 UpdatedAt = o.UpdatedAt
             }).ToList();
@@ -49,8 +50,9 @@ namespace Amply.Server.Controllers
                 NIC = owner.NIC,
                 FullName = owner.FullName,
                 Email = owner.Email,
+                Password = owner.Password, // show password
                 Phone = owner.Phone,
-                Password = owner.Password, // include password
+                Role = owner.Role,
                 CreatedAt = owner.CreatedAt,
                 UpdatedAt = owner.UpdatedAt
             };
@@ -74,8 +76,9 @@ namespace Amply.Server.Controllers
                 NIC = request.NIC,
                 FullName = request.FullName,
                 Email = request.Email,
-                Password = request.Password, // Consider hashing in production
+                Password = request.Password, // show password
                 Phone = request.Phone,
+                Role = "EvOwner", // always EvOwner
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -87,8 +90,9 @@ namespace Amply.Server.Controllers
                 NIC = owner.NIC,
                 FullName = owner.FullName,
                 Email = owner.Email,
+                Password = owner.Password, // show password
                 Phone = owner.Phone,
-                Password = owner.Password,
+                Role = owner.Role,
                 CreatedAt = owner.CreatedAt,
                 UpdatedAt = owner.UpdatedAt
             };
@@ -110,13 +114,11 @@ namespace Amply.Server.Controllers
             var update = Builders<OwnerProfile>.Update
                 .Set(o => o.FullName, request.FullName)
                 .Set(o => o.Email, request.Email)
-                .Set(o => o.Password, request.Password)
+                .Set(o => o.Password, request.Password) // show password
                 .Set(o => o.Phone, request.Phone)
                 .Set(o => o.UpdatedAt, DateTime.UtcNow);
 
-            var result = await _ownerCollection.UpdateOneAsync(o => o.NIC == nic, update);
-            if (result.MatchedCount == 0)
-                return NotFound(new { message = "Owner profile not found." });
+            await _ownerCollection.UpdateOneAsync(o => o.NIC == nic, update);
 
             return Ok(new { message = "Owner profile updated successfully" });
         }
@@ -131,5 +133,37 @@ namespace Amply.Server.Controllers
 
             return Ok(new { message = "Owner profile deleted successfully" });
         }
+
+        // Optional: Login by Email & Password
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var owner = await _ownerCollection
+                .Find(o => o.Email == request.Email && o.Password == request.Password)
+                .FirstOrDefaultAsync();
+
+            if (owner == null)
+                return Unauthorized(new { message = "Invalid email or password" });
+
+            var response = new OwnerProfileResponse
+            {
+                NIC = owner.NIC,
+                FullName = owner.FullName,
+                Email = owner.Email,
+                Password = owner.Password, // show password
+                Phone = owner.Phone,
+                Role = owner.Role,
+                CreatedAt = owner.CreatedAt,
+                UpdatedAt = owner.UpdatedAt
+            };
+
+            return Ok(response);
+        }
+    }
+
+    public class LoginRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }

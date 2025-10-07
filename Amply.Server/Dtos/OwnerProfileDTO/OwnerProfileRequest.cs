@@ -25,5 +25,7 @@ namespace Amply.Server.Dtos
         [Required, StringLength(15)]
         [JsonPropertyName("phone")]
         public string Phone { get; set; } = string.Empty;
+
+      
     }
 }
