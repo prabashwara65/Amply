@@ -17,7 +17,7 @@ namespace Amply.Server.Controllers
             _ownerCollection = database.GetCollection<OwnerProfile>("userprofiles");
         }
 
-        // Get all owner profiles
+        // GET: api/v1/userprofiles
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -28,18 +28,21 @@ namespace Amply.Server.Controllers
                 FullName = o.FullName,
                 Email = o.Email,
                 Phone = o.Phone,
+                Password = o.Password, // include password
                 CreatedAt = o.CreatedAt,
                 UpdatedAt = o.UpdatedAt
             }).ToList();
+
             return Ok(response);
         }
 
-        // Get owner profile by NIC
+        // GET: api/v1/userprofiles/{nic}
         [HttpGet("{nic}")]
         public async Task<IActionResult> GetByNIC(string nic)
         {
             var owner = await _ownerCollection.Find(o => o.NIC == nic).FirstOrDefaultAsync();
-            if (owner == null) return NotFound();
+            if (owner == null)
+                return NotFound(new { message = "Owner profile not found." });
 
             var response = new OwnerProfileResponse
             {
@@ -47,20 +50,21 @@ namespace Amply.Server.Controllers
                 FullName = owner.FullName,
                 Email = owner.Email,
                 Phone = owner.Phone,
+                Password = owner.Password, // include password
                 CreatedAt = owner.CreatedAt,
                 UpdatedAt = owner.UpdatedAt
             };
+
             return Ok(response);
         }
 
-        // Create new owner profile
+        // POST: api/v1/userprofiles
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OwnerProfileRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Check if NIC already exists
             var exists = await _ownerCollection.Find(o => o.NIC == request.NIC).AnyAsync();
             if (exists)
                 return BadRequest(new { message = "Owner profile with this NIC already exists." });
@@ -84,6 +88,7 @@ namespace Amply.Server.Controllers
                 FullName = owner.FullName,
                 Email = owner.Email,
                 Phone = owner.Phone,
+                Password = owner.Password,
                 CreatedAt = owner.CreatedAt,
                 UpdatedAt = owner.UpdatedAt
             };
@@ -91,7 +96,7 @@ namespace Amply.Server.Controllers
             return Ok(response);
         }
 
-        // Update owner profile
+        // PUT: api/v1/userprofiles/{nic}
         [HttpPut("{nic}")]
         public async Task<IActionResult> Update(string nic, [FromBody] OwnerProfileRequest request)
         {
@@ -110,12 +115,13 @@ namespace Amply.Server.Controllers
                 .Set(o => o.UpdatedAt, DateTime.UtcNow);
 
             var result = await _ownerCollection.UpdateOneAsync(o => o.NIC == nic, update);
-            if (result.MatchedCount == 0) return NotFound();
+            if (result.MatchedCount == 0)
+                return NotFound(new { message = "Owner profile not found." });
 
             return Ok(new { message = "Owner profile updated successfully" });
         }
 
-        // Delete owner profile
+        // DELETE: api/v1/userprofiles/{nic}
         [HttpDelete("{nic}")]
         public async Task<IActionResult> Delete(string nic)
         {
