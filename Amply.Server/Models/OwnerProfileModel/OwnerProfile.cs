@@ -34,6 +34,9 @@ namespace Amply.Server.Models
 
         [BsonElement("role")]
         public string Role { get; set; } = string.Empty;
+        [BsonElement("role")]
+        [Required]
+        public string Role { get; set; } = "EvOwner"; 
 
         [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
