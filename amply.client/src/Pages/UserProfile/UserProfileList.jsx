@@ -8,6 +8,7 @@ import {
   deleteUserProfile,
   getUserProfileById,
 } from "../../Services/UserProfileService/userProfileService"
+import { deactivateUserProfile, requestReactivateUserProfile, activateUserProfile } from "../../Services/UserProfileService/userProfileService"
 
 export default function EVOwnersPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -25,6 +26,7 @@ export default function EVOwnersPage() {
   const [owners, setOwners] = useState([])
   const [isEdit, setIsEdit] = useState(false)
   const [editNIC, setEditNIC] = useState("")
+  const [message, setMessage] = useState("");
 
   // Fetch owners on mount
   useEffect(() => {
@@ -121,10 +123,13 @@ export default function EVOwnersPage() {
     try {
       if (isEdit) {
         await updateUserProfile(editNIC, formData)
+        setMessage("Profile updated successfully.");
       } else {
         await createUserProfile(formData)
+        setMessage("Profile created successfully.");
       }
-      setShowModal(false)
+      setTimeout(() => {
+      setShowModal(false);
       setFormData({
         nic: "",
         fullName: "",
@@ -132,11 +137,12 @@ export default function EVOwnersPage() {
         phone: "",
         password: "",
         status: "active",
-      })
-      setErrors({})
-      setIsEdit(false)
-      setEditNIC("")
-      fetchOwners()
+      });
+      setErrors({});
+      setIsEdit(false);
+      setEditNIC("");
+      fetchOwners();
+    }, 1000);
     } catch (err) {
       alert("Error saving profile: " + (err.response?.data?.message || err.message))
     }
@@ -216,6 +222,55 @@ export default function EVOwnersPage() {
     }
   }
 
+  const handleDeactivate = async (nic) => {
+  try {
+    await deactivateUserProfile(nic);
+    setMessage("Account has been deactivated.");
+    fetchOwners(); 
+    setTimeout(() => {
+      setShowModal(false);
+      setMessage(""); 
+    }, 1000);
+  } catch (err) {
+    alert("Error deactivating profile: " + (err.response?.data?.message || err.message));
+  }
+};
+
+const handleRequestReactivate = async (nic) => {
+  try {
+    await requestReactivateUserProfile(nic);
+    setMessage("Reactivation request sent.");
+    fetchOwners();
+    setTimeout(() => {
+      setShowModal(false);
+      setMessage(""); 
+    }, 1000);  
+  } catch (err) {
+    alert("Error requesting reactivation: " + (err.response?.data?.message || err.message));
+  }
+};
+
+const handleActivate = async (nic) => {
+  try {
+    await activateUserProfile(nic);
+    setMessage("Account has been activated.");
+    fetchOwners();
+    setTimeout(() => {
+      setShowModal(false);
+      setMessage(""); 
+    }, 1000);     
+  } catch (err) {
+    alert("Error activating profile: " + (err.response?.data?.message || err.message));
+  }
+};
+
+useEffect(() => {
+  if (message) {
+    const timer = setTimeout(() => setMessage(""), 5000);
+    return () => clearTimeout(timer);
+  }
+}, [message]);
+
   return (
     <>
       <div className="flex items-center justify-between mb-8">
@@ -273,7 +328,9 @@ export default function EVOwnersPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredOwners.map((owner) => (
-                <tr key={owner.nic} className="hover:bg-gray-50 transition-colors">
+                <tr key={owner.nic} className={`hover:bg-gray-50 transition-colors ${
+        owner.status === "deactive" ? "bg-gray-100 text-gray-400" : ""
+      }`}>
                   <td className="px-6 py-4 text-sm text-gray-900 font-medium">{owner.nic}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{owner.fullName}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{owner.email}</td>
@@ -410,32 +467,37 @@ export default function EVOwnersPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Password <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      required
-                      placeholder="Enter password"
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent pr-10 ${
-                        errors.password ? "border-red-500" : "border-gray-300"
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
-                </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Password <span className="text-red-500">*</span>
+  </label>
+  <div className="relative">
+    <input
+      type={isEdit ? "password" : (showPassword ? "text" : "password")}
+      name="password"
+      value={isEdit ? "********" : formData.password}
+      onChange={isEdit ? undefined : handleInputChange}
+      readOnly={isEdit}
+      disabled={isEdit}
+      placeholder={isEdit ? "" : "Enter password"}
+      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent pr-10 ${
+        errors.password ? "border-red-500" : "border-gray-300"
+      } ${isEdit ? "bg-gray-100" : ""}`}
+    />
+    {!isEdit && (
+      <button
+        type="button"
+        onClick={() => setShowPassword((prev) => !prev)}
+        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        tabIndex={-1}
+      >
+        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    )}
+  </div>
+  {!isEdit && errors.password && (
+    <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+  )}
+</div>
               </div>
 
               <div className="flex gap-3 mt-8 pt-6 border-t border-gray-200">
@@ -459,6 +521,39 @@ export default function EVOwnersPage() {
                 </button>
               </div>
             </form>
+            {message && (
+  <div className="mt-4 mb-2 px-4 py-2 w-100 ml-34 rounded bg-green-100 text-green-800 border border-green-300 text-center">
+    {message}
+  </div>
+)}
+            {isEdit && (
+        <div className="flex justify-end gap-3 px-6 pb-6">
+          {formData.status === "active" && (
+            <button
+              onClick={() => handleDeactivate(formData.nic)}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Deactivate
+            </button>
+          )}
+          {formData.status === "deactive" && (
+            <button
+              onClick={() => handleRequestReactivate(formData.nic)}
+              className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+            >
+              Request to Reactivate
+            </button>
+          )}
+          {formData.status === "requested to reactivate" && (
+            <button
+              onClick={() => handleActivate(formData.nic)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Activate
+            </button>
+          )}
+        </div>
+      )}
           </div>
         </div>
       )}

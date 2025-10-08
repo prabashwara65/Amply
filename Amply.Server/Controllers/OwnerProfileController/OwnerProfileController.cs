@@ -28,6 +28,7 @@ namespace Amply.Server.Controllers
                 FullName = o.FullName,
                 Email = o.Email,
                 Phone = o.Phone,
+                Status = o.Status,
                 CreatedAt = o.CreatedAt,
                 UpdatedAt = o.UpdatedAt
             }).ToList();
@@ -47,6 +48,7 @@ namespace Amply.Server.Controllers
                 FullName = owner.FullName,
                 Email = owner.Email,
                 Phone = owner.Phone,
+                Status = owner.Status,
                 CreatedAt = owner.CreatedAt,
                 UpdatedAt = owner.UpdatedAt
             };
@@ -72,6 +74,7 @@ namespace Amply.Server.Controllers
                 Email = request.Email,
                 Password = request.Password, // Consider hashing in production
                 Phone = request.Phone,
+                Status = "active",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -84,6 +87,7 @@ namespace Amply.Server.Controllers
                 FullName = owner.FullName,
                 Email = owner.Email,
                 Phone = owner.Phone,
+                Status = owner.Status,
                 CreatedAt = owner.CreatedAt,
                 UpdatedAt = owner.UpdatedAt
             };
@@ -125,5 +129,38 @@ namespace Amply.Server.Controllers
 
             return Ok(new { message = "Owner profile deleted successfully" });
         }
+
+        [HttpPut("{nic}/deactivate")]
+public async Task<IActionResult> Deactivate(string nic)
+{
+    var update = Builders<OwnerProfile>.Update
+        .Set(o => o.Status, "deactive")
+        .Set(o => o.UpdatedAt, DateTime.UtcNow);
+    var result = await _ownerCollection.UpdateOneAsync(o => o.NIC == nic, update);
+    if (result.MatchedCount == 0) return NotFound();
+    return Ok(new { message = "Profile deactivated" });
+}
+
+[HttpPut("{nic}/request-reactivate")]
+public async Task<IActionResult> RequestReactivate(string nic)
+{
+    var update = Builders<OwnerProfile>.Update
+        .Set(o => o.Status, "requested to reactivate")
+        .Set(o => o.UpdatedAt, DateTime.UtcNow);
+    var result = await _ownerCollection.UpdateOneAsync(o => o.NIC == nic, update);
+    if (result.MatchedCount == 0) return NotFound();
+    return Ok(new { message = "Reactivation requested" });
+}
+
+[HttpPut("{nic}/activate")]
+public async Task<IActionResult> Activate(string nic)
+{
+    var update = Builders<OwnerProfile>.Update
+        .Set(o => o.Status, "active")
+        .Set(o => o.UpdatedAt, DateTime.UtcNow);
+    var result = await _ownerCollection.UpdateOneAsync(o => o.NIC == nic, update);
+    if (result.MatchedCount == 0) return NotFound();
+    return Ok(new { message = "Profile activated" });
+}
     }
 }
