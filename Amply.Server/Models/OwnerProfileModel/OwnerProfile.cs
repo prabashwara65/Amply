@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Amply.Server.Models
 {
+    [BsonIgnoreExtraElements]
     public class OwnerProfile
     {
         [BsonId]
@@ -27,6 +28,12 @@ namespace Amply.Server.Models
         [Required, StringLength(15)]
         public string Phone { get; set; } = string.Empty;
 
+        [BsonElement("status")]
+        [Required]
+        public string Status { get; set; } = "active";
+
+        [BsonElement("role")]
+        public string Role { get; set; } = string.Empty;
         [BsonElement("role")]
         [Required]
         public string Role { get; set; } = "EvOwner"; 

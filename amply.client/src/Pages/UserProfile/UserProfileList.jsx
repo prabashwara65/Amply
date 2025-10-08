@@ -8,8 +8,25 @@ import {
     deleteUserProfile,
     getUserProfileById,
 } from "../../Services/UserProfileService/userProfileService"
+import { deactivateUserProfile, requestReactivateUserProfile, activateUserProfile } from "../../Services/UserProfileService/userProfileService"
 
 export default function EVOwnersPage() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [formData, setFormData] = useState({
+    nic: "",
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    status: "active",
+  })
+  const [owners, setOwners] = useState([])
+  const [isEdit, setIsEdit] = useState(false)
+  const [editNIC, setEditNIC] = useState("")
+  const [message, setMessage] = useState("");
     const [searchTerm, setSearchTerm] = useState("")
     const [showModal, setShowModal] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
@@ -105,6 +122,46 @@ export default function EVOwnersPage() {
         }
     }
 
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const newErrors = {
+      nic: validateNIC(formData.nic),
+      email: validateEmail(formData.email),
+      phone: validatePhone(formData.phone),
+      password: validatePassword(formData.password),
+    }
+    const hasErrors = Object.values(newErrors).some((error) => error !== "")
+    if (hasErrors) {
+      setErrors(newErrors)
+      return
+    }
+    try {
+      if (isEdit) {
+        await updateUserProfile(editNIC, formData)
+        setMessage("Profile updated successfully.");
+      } else {
+        await createUserProfile(formData)
+        setMessage("Profile created successfully.");
+      }
+      setTimeout(() => {
+      setShowModal(false);
+      setFormData({
+        nic: "",
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "",
+        status: "active",
+      });
+      setErrors({});
+      setIsEdit(false);
+      setEditNIC("");
+      fetchOwners();
+    }, 1000);
+    } catch (err) {
+      alert("Error saving profile: " + (err.response?.data?.message || err.message))
+    }
+  }
     const handleSubmit = async (e) => {
         e.preventDefault()
 
@@ -195,6 +252,66 @@ export default function EVOwnersPage() {
         }
     }
 
+  const handleDeactivate = async (nic) => {
+  try {
+    await deactivateUserProfile(nic);
+    setMessage("Account has been deactivated.");
+    fetchOwners(); 
+    setTimeout(() => {
+      setShowModal(false);
+      setMessage(""); 
+    }, 1000);
+  } catch (err) {
+    alert("Error deactivating profile: " + (err.response?.data?.message || err.message));
+  }
+};
+
+const handleRequestReactivate = async (nic) => {
+  try {
+    await requestReactivateUserProfile(nic);
+    setMessage("Reactivation request sent.");
+    fetchOwners();
+    setTimeout(() => {
+      setShowModal(false);
+      setMessage(""); 
+    }, 1000);  
+  } catch (err) {
+    alert("Error requesting reactivation: " + (err.response?.data?.message || err.message));
+  }
+};
+
+const handleActivate = async (nic) => {
+  try {
+    await activateUserProfile(nic);
+    setMessage("Account has been activated.");
+    fetchOwners();
+    setTimeout(() => {
+      setShowModal(false);
+      setMessage(""); 
+    }, 1000);     
+  } catch (err) {
+    alert("Error activating profile: " + (err.response?.data?.message || err.message));
+  }
+};
+
+useEffect(() => {
+  if (message) {
+    const timer = setTimeout(() => setMessage(""), 5000);
+    return () => clearTimeout(timer);
+  }
+}, [message]);
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-1">EV Owner Management</h2>
+          <p className="text-gray-600">Manage EV owner profiles and accounts</p>
+        </div>
+        <button
+          onClick={() => {
+            setShowModal(true)
+            setIsEdit(false)
     const handleEdit = async (nic) => {
         try {
             const res = await getUserProfileById(nic)
@@ -206,6 +323,106 @@ export default function EVOwnersPage() {
                 password: "", // require re-entry
                 status: res.data.status || "active",
             })
+            setErrors({})
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 shadow-md transition-all"
+        >
+          <Plus className="w-4 h-4" />
+          Create New Profile
+        </button>
+      </div>
+
+      <div className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name, NIC, or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-white shadow-sm"
+          />
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-900 text-white">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold">NIC</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Full Name</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Email</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Phone</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Password</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredOwners.map((owner) => (
+                <tr key={owner.nic} className={`hover:bg-gray-50 transition-colors ${
+        owner.status === "deactive" ? "bg-gray-100 text-gray-400" : ""
+      }`}>
+                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">{owner.nic}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{owner.fullName}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{owner.email}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{owner.phone}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600 font-mono">********</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(owner.status)}`}>
+                      {getStatusText(owner.status)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handleEdit(owner.nic)}
+                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(owner.nic)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {filteredOwners.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No EV owners found matching your search.</p>
+          </div>
+        )}
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-2xl font-bold text-gray-900">
+                {isEdit ? "Edit EV Owner Profile" : "Create New EV Owner Profile"}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowModal(false)
+                  setErrors({})
+                  setIsEdit(false)
+                  setEditNIC("")
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             setIsEdit(true)
             setEditNIC(nic)
             setShowModal(true)
@@ -340,6 +557,100 @@ export default function EVOwnersPage() {
                             </button>
                         </div>
 
+                <div className="md:col-span-2">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Password <span className="text-red-500">*</span>
+  </label>
+  <div className="relative">
+    <input
+      type={isEdit ? "password" : (showPassword ? "text" : "password")}
+      name="password"
+      value={isEdit ? "********" : formData.password}
+      onChange={isEdit ? undefined : handleInputChange}
+      readOnly={isEdit}
+      disabled={isEdit}
+      placeholder={isEdit ? "" : "Enter password"}
+      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent pr-10 ${
+        errors.password ? "border-red-500" : "border-gray-300"
+      } ${isEdit ? "bg-gray-100" : ""}`}
+    />
+    {!isEdit && (
+      <button
+        type="button"
+        onClick={() => setShowPassword((prev) => !prev)}
+        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        tabIndex={-1}
+      >
+        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    )}
+  </div>
+  {!isEdit && errors.password && (
+    <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+  )}
+</div>
+              </div>
+
+              <div className="flex gap-3 mt-8 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowModal(false)
+                    setErrors({})
+                    setIsEdit(false)
+                    setEditNIC("")
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 shadow-md transition-all"
+                >
+                  {isEdit ? "Update Profile" : "Create Profile"}
+                </button>
+              </div>
+            </form>
+            {message && (
+  <div className="mt-4 mb-2 px-4 py-2 w-100 ml-34 rounded bg-green-100 text-green-800 border border-green-300 text-center">
+    {message}
+  </div>
+)}
+            {isEdit && (
+        <div className="flex justify-end gap-3 px-6 pb-6">
+          {formData.status === "active" && (
+            <button
+              onClick={() => handleDeactivate(formData.nic)}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Deactivate
+            </button>
+          )}
+          {formData.status === "deactive" && (
+            <button
+              onClick={() => handleRequestReactivate(formData.nic)}
+              className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+            >
+              Request to Reactivate
+            </button>
+          )}
+          {formData.status === "requested to reactivate" && (
+            <button
+              onClick={() => handleActivate(formData.nic)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Activate
+            </button>
+          )}
+        </div>
+      )}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
                         <form onSubmit={handleSubmit} className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* NIC */}

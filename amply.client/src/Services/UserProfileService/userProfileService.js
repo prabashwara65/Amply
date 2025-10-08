@@ -29,3 +29,18 @@ export const updateUserProfile = async (id, data) => {
 export const deleteUserProfile = async (id) => {
   return await axios.delete(`${API_URL}/${id}`);
 };
+
+// Deactivate a user profile
+export const deactivateUserProfile = async (nic) => {
+  return await axios.put(`${API_URL}/${nic}/deactivate`);
+};
+
+// Request to reactivate a user profile
+export const requestReactivateUserProfile = async (nic) => {
+  return await axios.put(`${API_URL}/${nic}/request-reactivate`);
+};
+
+// Activate a user profile
+export const activateUserProfile = async (nic) => {
+  return await axios.put(`${API_URL}/${nic}/activate`);
+};
