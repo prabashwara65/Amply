@@ -32,8 +32,8 @@ namespace Amply.Server.Models
         [Required]
         public string Status { get; set; } = "active";
 
-        [BsonElement("role")]
-        public string Role { get; set; } = string.Empty;
+        //[BsonElement("role")]
+        //public string Role { get; set; } = string.Empty;
         [BsonElement("role")]
         [Required]
         public string Role { get; set; } = "EvOwner"; 
