@@ -1,8 +1,15 @@
 // src/Pages/Auth/DashboardPages/HomePage.jsx
-import React from "react"
+import React, {useEffect, useState} from "react"
+import { useNavigate } from "react-router-dom"
 import { ChevronRight, Zap, MapPin, Calendar, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react"
+import { getUserProfiles } from "../../../../Services/UserProfileService/userProfileService";
 
 export default function HomePage({ operatorName = "Operator" }) {
+  const navigate = useNavigate();
+  const [managedOwners, setManagedOwners] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const todayBookings = [
     { id: 1, owner: "Sarah Johnson", station: "Downtown Station A", time: "10:00 AM", status: "confirmed" },
     { id: 2, owner: "Michael Chen", station: "Mall Parking B", time: "2:30 PM", status: "pending" },
@@ -15,17 +22,27 @@ export default function HomePage({ operatorName = "Operator" }) {
     { name: "Airport Station C", location: "Airport Zone", slots: 8, available: 5, type: "DC Fast" },
   ]
 
-  const managedOwners = [
-    { name: "David Brown", nic: "199645678901", registered: "Sep 28", status: "active" },
-    { name: "Lisa Anderson", nic: "199756789012", registered: "Sep 27", status: "active" },
-    { name: "James Wilson", nic: "198867890123", registered: "Sep 26", status: "pending" },
-  ]
-
   const todaysStats = {
     "Confirmed Bookings": 20,
     "Pending Approvals": 5,
     "Slots Available": 10,
   }
+
+  useEffect(() => {
+    const fetchOwners = async () => {
+      try {
+        const response = await getUserProfiles();
+        const owners = response.data || [];
+        setManagedOwners(owners);
+      } catch (err) {
+        console.error("Error fetching user profiles:", err);
+        setError("Failed to load owners");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOwners();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -108,26 +125,58 @@ export default function HomePage({ operatorName = "Operator" }) {
         <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg shadow-md">
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <h3 className="text-xl font-semibold text-gray-900">Managed EV Owners</h3>
-            <button className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-1 rounded transition-colors">
+            <button
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-1 rounded transition-colors"
+              onClick={() => navigate("/evdashboard/user-profile/list")}
+            >
               View All
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+
           <div className="p-6 space-y-3">
-            {managedOwners.map((owner) => (
-              <div key={owner.nic} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+            {loading && <p className="text-sm text-gray-500">Loading owners...</p>}
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            {!loading && managedOwners.length === 0 && (
+              <p className="text-sm text-gray-500">No owners found.</p>
+            )}
+
+            {managedOwners.slice(0, 5).map((owner) => (
+              <div
+                key={owner.nic || owner.NIC}
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center border-2 border-gray-200">
-                    <span className="text-sm font-medium text-white">{owner.name.split(" ").map(n => n[0]).join("")}</span>
+                    <span className="text-sm font-medium text-white">
+                      {owner.fullName
+                        ? owner.fullName.split(" ").map((n) => n[0]).join("")
+                        : "?"}
+                    </span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm text-gray-900">{owner.name}</p>
-                    <p className="text-xs text-gray-500">NIC: {owner.nic}</p>
+                    <p className="font-medium text-sm text-gray-900">{owner.fullName}</p>
+                    <p className="text-xs text-gray-500">NIC: {owner.nic || owner.NIC}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${owner.status === "active" ? "bg-green-600 text-white" : "bg-yellow-200 text-yellow-800 border border-yellow-300"}`}>{owner.status}</span>
-                  <p className="text-xs text-gray-500 mt-1">{owner.registered}</p>
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      owner.status === "active"
+                        ? "bg-green-600 text-white"
+                        : owner.status === "deactive"
+                        ? "bg-gray-300 text-gray-700"
+                        : "bg-yellow-200 text-yellow-800 border border-yellow-300"
+                    }`}
+                  >
+                    {owner.status}
+                  </span>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {owner.createdAt
+                      ? new Date(owner.createdAt).toLocaleDateString()
+                      : ""}
+                  </p>
                 </div>
               </div>
             ))}
