@@ -127,6 +127,115 @@ namespace Amply.Server.Controllers
             return Ok(response);
         }
 
+        // Get available slots with timing information for a specific station
+        [HttpGet("{id}/available-slots")]
+        public async Task<IActionResult> GetAvailableSlots(string id)
+        {
+            var chargingStation = await _chargingStationCollection.Find(cs => cs.Id == id).FirstOrDefaultAsync();
+            if (chargingStation == null) 
+                return NotFound(new { message = "Charging station not found" });
+
+            // Get only available slots from schedule
+            var availableSlots = chargingStation.Schedule
+                .Where(s => s.IsAvailable)
+                .Select(s => new
+                {
+                    date = s.Date,
+                    slotNumber = s.SlotNumber,
+                    startTime = s.StartTime,
+                    endTime = s.EndTime,
+                    isAvailable = s.IsAvailable
+                })
+                .OrderBy(s => s.date)
+                .ThenBy(s => s.slotNumber)
+                .ToList();
+
+            var response = new
+            {
+                stationId = chargingStation.StationId,
+                stationName = chargingStation.StationName,
+                totalSlots = chargingStation.TotalSlots,
+                availableSlots = chargingStation.AvailableSlots,
+                remainingSlots = availableSlots.Count,
+                slots = availableSlots
+            };
+
+            return Ok(response);
+        }
+
+        // Get available slots by station ID (custom field, not MongoDB _id)
+        [HttpGet("station/{stationId}/available-slots")]
+        public async Task<IActionResult> GetAvailableSlotsByStationId(string stationId)
+        {
+            var chargingStation = await _chargingStationCollection.Find(cs => cs.StationId == stationId).FirstOrDefaultAsync();
+            if (chargingStation == null) 
+                return NotFound(new { message = "Charging station not found" });
+
+            // Get only available slots from schedule
+            var availableSlots = chargingStation.Schedule
+                .Where(s => s.IsAvailable)
+                .Select(s => new
+                {
+                    date = s.Date,
+                    slotNumber = s.SlotNumber,
+                    startTime = s.StartTime,
+                    endTime = s.EndTime,
+                    isAvailable = s.IsAvailable
+                })
+                .OrderBy(s => s.date)
+                .ThenBy(s => s.slotNumber)
+                .ToList();
+
+            var response = new
+            {
+                stationId = chargingStation.StationId,
+                stationName = chargingStation.StationName,
+                totalSlots = chargingStation.TotalSlots,
+                availableSlots = chargingStation.AvailableSlots,
+                remainingSlots = availableSlots.Count,
+                slots = availableSlots
+            };
+
+            return Ok(response);
+        }
+
+        // Get available slots for a specific date and station
+        [HttpGet("{id}/available-slots/date/{date}")]
+        public async Task<IActionResult> GetAvailableSlotsByDate(string id, DateTime date)
+        {
+            var chargingStation = await _chargingStationCollection.Find(cs => cs.Id == id).FirstOrDefaultAsync();
+            if (chargingStation == null) 
+                return NotFound(new { message = "Charging station not found" });
+
+            var targetDate = date.Date;
+            
+            // Get available slots for the specific date
+            var availableSlots = chargingStation.Schedule
+                .Where(s => s.Date.Date == targetDate && s.IsAvailable)
+                .Select(s => new
+                {
+                    date = s.Date,
+                    slotNumber = s.SlotNumber,
+                    startTime = s.StartTime,
+                    endTime = s.EndTime,
+                    isAvailable = s.IsAvailable
+                })
+                .OrderBy(s => s.slotNumber)
+                .ToList();
+
+            var response = new
+            {
+                stationId = chargingStation.StationId,
+                stationName = chargingStation.StationName,
+                date = targetDate,
+                availableSlotsForDate = availableSlots.Count,
+                totalSlotsForDate = chargingStation.Schedule.Count(s => s.Date.Date == targetDate),
+                slots = availableSlots
+            };
+
+            return Ok(response);
+        }
+
         // Create a new charging station
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ChargingStationRequest request)

@@ -310,6 +310,62 @@ namespace Amply.Server.Controllers
             });
         }
 
+        // Confirm a reservation (EV operator confirms pending reservation)
+        [HttpPatch("{id}/confirm")]
+        public async Task<IActionResult> ConfirmReservation(string id)
+        {
+            var reservation = await _reservationCollection.Find(r => r.Id == id).FirstOrDefaultAsync();
+            if (reservation == null)
+                return NotFound(new { message = "Reservation not found" });
+
+            // Only pending reservations can be confirmed
+            if (!reservation.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                return BadRequest(new { message = $"Cannot confirm reservation with status: {reservation.Status}" });
+
+            // Generate QR code when confirming
+            string qrCodeBase64 = GenerateQrCodeBase64(
+                reservation.ReservationCode, 
+                reservation.FullName, 
+                reservation.SlotNo, 
+                reservation.StartTime, 
+                reservation.EndTime, 
+                reservation.VehicleNumber
+            );
+
+            var update = Builders<Reservation>.Update
+                .Set(r => r.Status, "Confirmed")
+                .Set(r => r.QrCode, qrCodeBase64)
+                .Set(r => r.UpdatedAt, DateTime.UtcNow);
+
+            var result = await _reservationCollection.UpdateOneAsync(r => r.Id == id, update);
+            if (result.MatchedCount == 0)
+                return NotFound(new { message = "Reservation not found" });
+
+            var updatedReservation = await _reservationCollection.Find(r => r.Id == id).FirstOrDefaultAsync();
+
+            var response = new ReservationResponse
+            {
+                Id = updatedReservation.Id,
+                ReservationCode = updatedReservation.ReservationCode,
+                FullName = updatedReservation.FullName,
+                NIC = updatedReservation.NIC,
+                VehicleNumber = updatedReservation.VehicleNumber,
+                StationId = updatedReservation.StationId,
+                StationName = updatedReservation.StationName,
+                SlotNo = updatedReservation.SlotNo,
+                BookingDate = updatedReservation.BookingDate,
+                ReservationDate = updatedReservation.ReservationDate,
+                StartTime = updatedReservation.StartTime,
+                EndTime = updatedReservation.EndTime,
+                Status = updatedReservation.Status,
+                QrCode = updatedReservation.QrCode,
+                CreatedAt = updatedReservation.CreatedAt,
+                UpdatedAt = updatedReservation.UpdatedAt
+            };
+
+            return Ok(response);
+        }
+
         private string GenerateQrCodeBase64(string reservationCode, string fullName, int slotNo, TimeSpan startTime, TimeSpan endTime, string vehicleNumber)
         {
             var qrContent = new

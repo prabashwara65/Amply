@@ -53,3 +53,22 @@ export const getStationAvailability = async (id) => {
 export const getActiveChargingStations = async () => {
     return await axios.get(`${API_URL}/active`);
 }
+
+// Get available slots with timing information for a specific station (by MongoDB ID)
+export const getAvailableSlots = async (id) => {
+  return await axios.get(`${API_URL}/${id}/available-slots`);
+};
+
+// Get available slots by station ID (custom field, not MongoDB _id)
+export const getAvailableSlotsByStationId = async (stationId) => {
+  return await axios.get(`${API_URL}/station/${stationId}/available-slots`);
+};
+
+// Get available slots for a specific date
+export const getAvailableSlotsByDate = async (id, date) => {
+  // Format date as YYYY-MM-DD
+  const formattedDate = date instanceof Date 
+    ? date.toISOString().split('T')[0] 
+    : date;
+  return await axios.get(`${API_URL}/${id}/available-slots/date/${formattedDate}`);
+};
