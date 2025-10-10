@@ -44,3 +44,8 @@ export const getStatusById = async (id) => {
   return await axios.get(`${API_URL}/${id}/status`);
 };
 
+// Confirm a pending reservation (EV operator confirms)
+export const confirmReservation = async (id) => {
+  return await axios.patch(`${API_URL}/${id}/confirm`);
+};
+

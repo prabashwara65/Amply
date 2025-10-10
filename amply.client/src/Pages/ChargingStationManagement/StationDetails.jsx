@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getChargingStationById } from '../../Services/ChargingStationManagementService/chargingStationService';
-import { getReservationsByStationId, getReservationsByStationName } from '../../Services/ReservationService/reservationSevice';
+import { getReservationsByStationId, getReservationsByStationName, confirmReservation } from '../../Services/ReservationService/reservationSevice';
 import { toast } from 'react-toastify';
 
 export default function StationDetails() {
@@ -136,6 +136,17 @@ export default function StationDetails() {
     setCurrentDate(newDate);
   };
 
+  const handleConfirmReservation = async (reservationId) => {
+    try {
+      await confirmReservation(reservationId);
+      toast.success('Reservation confirmed successfully!');
+      // Refresh reservations to show updated status
+      fetchReservations();
+    } catch (error) {
+      console.error('Error confirming reservation:', error);
+      toast.error(error.response?.data?.message || 'Failed to confirm reservation');
+    }
+  };
 
   if (loading) {
     return (
@@ -327,9 +338,15 @@ export default function StationDetails() {
                               <div className="flex-1 ml-1">
                                 {reservation ? (
                                   <div
-                                    className={`px-1 py-0.5 rounded text-[9px] truncate ${getStatusColor(reservation.status)}`}
-                                    title={`${reservation.fullName} - Slot ${slotNumber}`}
+                                    className={`px-1 py-0.5 rounded text-[9px] truncate ${getStatusColor(reservation.status)} cursor-pointer`}
+                                    title={`${reservation.fullName} - Slot ${slotNumber} - ${reservation.status}`}
                                   >
+                                    {reservation.status.toLowerCase() === 'pending' && (
+                                      <span className="mr-0.5">⏳</span>
+                                    )}
+                                    {reservation.status.toLowerCase() === 'confirmed' && (
+                                      <span className="mr-0.5">✓</span>
+                                    )}
                                     {reservation.fullName}
                                   </div>
                                 ) : (
@@ -373,6 +390,9 @@ export default function StationDetails() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -401,6 +421,23 @@ export default function StationDetails() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(reservation.status)}`}>
                           {reservation.status}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {reservation.status.toLowerCase() === 'pending' ? (
+                          <button
+                            onClick={() => handleConfirmReservation(reservation.id)}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition"
+                          >
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Confirm
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            {reservation.status === 'Confirmed' ? '✓ Confirmed' : '—'}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
