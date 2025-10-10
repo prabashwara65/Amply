@@ -28,6 +28,7 @@ export default function HomePage({ operatorName = "Operator" }) {
     "Slots Available": 10,
   }
 
+  // fetch registered owners list
   useEffect(() => {
     const fetchOwners = async () => {
       try {

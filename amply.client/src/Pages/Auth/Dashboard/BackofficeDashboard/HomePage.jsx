@@ -23,6 +23,7 @@ export default function HomePage() {
     { name: "City Center D", location: "Business District", slots: 4, available: 0, type: "AC Standard" },
   ]
 
+  // fetch registered owners list
   useEffect(() => {
       const fetchOwners = async () => {
         try {
