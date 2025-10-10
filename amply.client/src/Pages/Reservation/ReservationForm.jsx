@@ -5,6 +5,7 @@ import {
   getReservationById,
   updateReservation,
 } from "../../Services/ReservationService/reservationSevice";
+import { getOwnerByNIC } from "../../Services/UserProfileService/userProfileService"
 import { getActiveChargingStations } from "../../Services/ChargingStationManagementService/chargingStationService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -41,6 +42,24 @@ export default function ReservationForm() {
     { day: "SAT", slots: 5, start: "09:00", end: "21:00" },
     { day: "SUN", slots: 3, start: "08:00", end: "16:00" },
   ]);
+
+    const handleNICChange = async (e) => {
+        const nic = e.target.value;
+        setForm({ ...form, nic });
+
+        if (nic.length > 0) {
+            try {
+                const { data } = await getOwnerByNIC(nic);
+                setForm((prev) => ({ ...prev, fullName: data.fullName }));
+            } catch (err) {
+                setForm((prev) => ({ ...prev, fullName: "" }));
+                toast.error("No owner profile found with this NIC.");
+            }
+        } else {
+            setForm((prev) => ({ ...prev, fullName: "" }));
+        }
+    };
+
 
   // Fetch reservation if editing
   useEffect(() => {
@@ -154,9 +173,9 @@ export default function ReservationForm() {
             <Plug className="w-5 h-5 text-gray-700" /> Reservation Details
           </h3>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InputField icon={<IdCard />} label="NIC" name="nic" value={form.nic} onChange={handleChange} required />
-            <InputField icon={<User />} label="Full Name" name="fullName" value={form.fullName} onChange={handleChange} required />
+                  <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <InputField icon={<IdCard />} label="NIC" name="nic" value={form.nic} onChange={handleNICChange} required />
+                      <InputField icon={<User />} label="Full Name" name="fullName" value={form.fullName} onChange={handleChange} required readOnly />
             <InputField icon={<Car/> }label= "Vehicle Number" name="vehicleNumber" value={form.vehicleNumber} onChange={handleChange} required/>
             <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
             <SelectField
