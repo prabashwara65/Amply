@@ -31,9 +31,9 @@ export default function BackOfficeDashboard() {
     { id: "home", label: "Dashboard", icon: Home },
     { id: "reservation", label: "Reservation", icon: MapPin },
     { id: "ev-stations", label: "EV Stations", icon: Battery },
-    { id: "operators", label: "Station Operators", icon: UserCog },
-    { id: "reports", label: "Reports", icon: BarChart3 },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "owners", label: "EV Owners", icon: Users },
+    // { id: "reports", label: "Reports", icon: BarChart3 },
+    // { id: "settings", label: "Settings", icon: Settings },
   ];
 
   const recentBookings = [];

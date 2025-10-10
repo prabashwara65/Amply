@@ -28,11 +28,12 @@ export default function EVOwnersPage() {
   const [editNIC, setEditNIC] = useState("")
   const [message, setMessage] = useState("");
 
-  // Fetch owners on mount
+  // Fetch all EV owner profiles on component mount
   useEffect(() => {
     fetchOwners()
   }, [])
 
+  // Fetch all EV owners from backend API
   const fetchOwners = async () => {
     try {
       const res = await getUserProfiles()
@@ -42,6 +43,7 @@ export default function EVOwnersPage() {
     }
   }
 
+  // Filter owners based on search term
   const filteredOwners = owners.filter(
     (owner) =>
       owner.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,6 +51,7 @@ export default function EVOwnersPage() {
       owner.email?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
+  // Get badge styles based on status
   const getStatusBadge = (status) => {
     switch (status) {
       case "active":
@@ -62,6 +65,7 @@ export default function EVOwnersPage() {
     }
   }
 
+  // Get display text based on status
   const getStatusText = (status) => {
     switch (status) {
       case "active":
@@ -75,6 +79,7 @@ export default function EVOwnersPage() {
     }
   }
 
+  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -83,6 +88,7 @@ export default function EVOwnersPage() {
     }
   }
 
+  // Handles field validation when input loses focus
   const handleBlur = (e) => {
     const { name, value } = e.target
     let error = ""
@@ -107,6 +113,7 @@ export default function EVOwnersPage() {
     }
   }
 
+  // Handles form submission for create or update profile
   const handleSubmit = async (e) => {
     e.preventDefault()
     const newErrors = {
@@ -148,6 +155,7 @@ export default function EVOwnersPage() {
     }
   }
 
+  // Validates NIC format
   const validateNIC = (nic) => {
     const twelveDigits = /^\d{12}$/
     const elevenDigitsOneChar = /^\d{11}[a-zA-Z]$/
@@ -157,6 +165,7 @@ export default function EVOwnersPage() {
     return "NIC must be 12 digits or 11 digits followed by 1 character"
   }
 
+  // Validates email format
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (emailRegex.test(email)) {
@@ -165,6 +174,7 @@ export default function EVOwnersPage() {
     return "Please enter a valid email address"
   }
 
+  // Validates phone number format
   const validatePhone = (phone) => {
     const digits = phone.replace(/\D/g, "")
     if (digits.length === 10) {
@@ -173,6 +183,7 @@ export default function EVOwnersPage() {
     return "Phone number must be exactly 10 digits"
   }
 
+  // Validates password complexity
   const validatePassword = (password) => {
     if (password.length < 8) {
       return "Password must be at least 8 characters long"
@@ -192,6 +203,7 @@ export default function EVOwnersPage() {
     return ""
   }
 
+  // Handles deleting a user profile
   const handleDelete = async (nic) => {
     if (window.confirm("Are you sure you want to delete this EV owner profile?")) {
       try {
@@ -203,6 +215,7 @@ export default function EVOwnersPage() {
     }
   }
 
+  // Handles editing a user profile
   const handleEdit = async (nic) => {
     try {
       const res = await getUserProfileById(nic)
@@ -222,6 +235,7 @@ export default function EVOwnersPage() {
     }
   }
 
+  // Handles deactivating a user profile
   const handleDeactivate = async (nic) => {
   try {
     await deactivateUserProfile(nic);
@@ -236,6 +250,7 @@ export default function EVOwnersPage() {
   }
 };
 
+// Handles requesting reactivation of a user profile
 const handleRequestReactivate = async (nic) => {
   try {
     await requestReactivateUserProfile(nic);
@@ -250,6 +265,7 @@ const handleRequestReactivate = async (nic) => {
   }
 };
 
+// Handles activating a user profile
 const handleActivate = async (nic) => {
   try {
     await activateUserProfile(nic);
