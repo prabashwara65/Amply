@@ -44,3 +44,8 @@ export const requestReactivateUserProfile = async (nic) => {
 export const activateUserProfile = async (nic) => {
   return await axios.put(`${API_URL}/${nic}/activate`);
 };
+
+//validate user information in reservation form
+export const getOwnerByNIC = async (nic) => {
+    return await axios.get(`${API_URL}/${nic}`);
+};

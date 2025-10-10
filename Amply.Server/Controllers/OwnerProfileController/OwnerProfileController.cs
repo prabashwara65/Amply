@@ -195,6 +195,7 @@ public async Task<IActionResult> Activate(string nic)
 
             return Ok(response);
         }
+
     }
 
     public class LoginRequest
