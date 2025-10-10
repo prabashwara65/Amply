@@ -1,3 +1,17 @@
+/***************************************************************
+ * Project      : Amply EV Charging Management System
+ * File Name    : OwnerProfileController.cs
+ * Author       : Sithmi Himanshi
+ * Created Date : 2025-10-10
+ * Description  : This controller manages CRUD operations for EV 
+ *                Owner profiles including activation, deactivation,
+ *                reactivation, and authentication.
+ * 
+ * Last Modified: 2025-10-10
+ * Modified By  : Sithmi Himanshi
+ * Version      : 1.0
+ ***************************************************************/
+
 using Amply.Server.Dtos;
 using Amply.Server.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +32,7 @@ namespace Amply.Server.Controllers
         }
 
         // GET: api/v1/userprofiles
+        // Retrieves all EV owner profiles from the database
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -39,6 +54,7 @@ namespace Amply.Server.Controllers
         }
 
         // GET: api/v1/userprofiles/{nic}
+        // Retrieves a specific EV owner profile by NIC
         [HttpGet("{nic}")]
         public async Task<IActionResult> GetByNIC(string nic)
         {
@@ -63,6 +79,7 @@ namespace Amply.Server.Controllers
         }
 
         // POST: api/v1/userprofiles
+        // Creates a new EV owner profile
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OwnerProfileRequest request)
         {
@@ -105,6 +122,7 @@ namespace Amply.Server.Controllers
         }
 
         // PUT: api/v1/userprofiles/{nic}
+        // Updates an existing EV owner profile
         [HttpPut("{nic}")]
         public async Task<IActionResult> Update(string nic, [FromBody] OwnerProfileRequest request)
         {
@@ -129,6 +147,7 @@ namespace Amply.Server.Controllers
         }
 
         // DELETE: api/v1/userprofiles/{nic}
+        // Deletes an EV owner profile by NIC
         [HttpDelete("{nic}")]
         public async Task<IActionResult> Delete(string nic)
         {
@@ -139,6 +158,8 @@ namespace Amply.Server.Controllers
             return Ok(new { message = "Owner profile deleted successfully" });
         }
 
+// PUT: api/v1/userprofiles/{nic}/deactivate
+// Deactivates an EV owner profile
         [HttpPut("{nic}/deactivate")]
 public async Task<IActionResult> Deactivate(string nic)
 {
@@ -150,6 +171,8 @@ public async Task<IActionResult> Deactivate(string nic)
     return Ok(new { message = "Profile deactivated" });
 }
 
+// PUT: api/v1/userprofiles/{nic}/request-reactivate
+// Requests reactivation of an EV owner profile
 [HttpPut("{nic}/request-reactivate")]
 public async Task<IActionResult> RequestReactivate(string nic)
 {
@@ -161,6 +184,8 @@ public async Task<IActionResult> RequestReactivate(string nic)
     return Ok(new { message = "Reactivation requested" });
 }
 
+// PUT: api/v1/userprofiles/{nic}/activate
+// Activates an EV owner profile
 [HttpPut("{nic}/activate")]
 public async Task<IActionResult> Activate(string nic)
 {

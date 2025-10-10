@@ -1,3 +1,18 @@
+/***************************************************************
+ * Project      : Amply EV Charging Management System
+ * File Name    : OwnerProfileResponse.cs
+ * Author       : Sithmi Himanshi
+ * Created Date : 2025-10-10
+ * Description  : This Data Transfer Object (DTO) defines the 
+ *                structure of the API response returned when 
+ *                retrieving EV Owner profile data.
+ * 
+ * Last Modified: 2025-10-10
+ * Modified By  : Sithmi Himanshi
+ * Version      : 1.0
+ ***************************************************************/
+
+
 using System;
 
 namespace Amply.Server.Dtos

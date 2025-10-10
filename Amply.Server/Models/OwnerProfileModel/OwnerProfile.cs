@@ -1,3 +1,17 @@
+/***************************************************************
+ * Project      : Amply EV Charging Management System
+ * File Name    : OwnerProfile.cs
+ * Author       : Sithmi Himanshi
+ * Created Date : 2025-10-10
+ * Description  : MongoDB data model representing the EV Owner
+ *                user profile used for authentication, 
+ *                management, and API data persistence.
+ * 
+ * Last Modified: 2025-10-10
+ * Modified By  : Sithmi Himanshi
+ * Version      : 1.0
+ ***************************************************************/
+
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;

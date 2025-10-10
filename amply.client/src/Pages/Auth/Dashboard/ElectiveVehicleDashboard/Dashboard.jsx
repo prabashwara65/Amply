@@ -15,6 +15,7 @@ import {
 import HomePage from "./HomePage";
 import UserProfileList from "../../../UserProfile/UserProfileList";
 import DashboardNavbar from "./DashboardNavbar";
+import ReservationList from "../../../Reservation/ReservationList";
 
 export default function BackOfficeDashboard() {
   const [activeNav, setActiveNav] = useState("home");
@@ -27,7 +28,8 @@ export default function BackOfficeDashboard() {
 
   const navItems = [
     { id: "home", label: "Dashboard", icon: Home },
-    { id: "owners", label: "EV Owners", icon: Users },
+    // { id: "owners", label: "EV Owners", icon: Users },
+    { id: "reservation", label: "Reservation", icon: MapPin },
 
   ];
 
@@ -45,8 +47,10 @@ export default function BackOfficeDashboard() {
             recentOwners={recentOwners}
           />
         );
+      case "reservation":
+        return <ReservationList />;
       case "owners":
-        return <UserProfileList />;
+        return <UserProfileList/>;
       default:
         return (
           <HomePage
@@ -55,6 +59,7 @@ export default function BackOfficeDashboard() {
             recentOwners={recentOwners}
           />
         );
+        
     }
   };
 

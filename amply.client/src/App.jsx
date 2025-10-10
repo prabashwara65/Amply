@@ -33,6 +33,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/bodashboard" element={<BackofficeDashboard />} />
         <Route path="/evdashboard" element={<ElectiveVehicleDashboard />} />
+          
 
         {/* Reservation Routes */}
         <Route path="/reservations" element={<ReservationList />} />
@@ -47,6 +48,7 @@ function App() {
 
         {/* EV Owner Profile Routes */}
         <Route path="/user-profile/list" element={<UserProfileList />} />
+        
       </Routes>
     </Router>
   );
