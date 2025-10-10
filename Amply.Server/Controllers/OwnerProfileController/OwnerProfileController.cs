@@ -120,6 +120,7 @@ namespace Amply.Server.Controllers
                 .Set(o => o.Email, request.Email)
                 .Set(o => o.Password, request.Password) // show password
                 .Set(o => o.Phone, request.Phone)
+                .Set(o => o.Status, request.Status)
                 .Set(o => o.UpdatedAt, DateTime.UtcNow);
 
             await _ownerCollection.UpdateOneAsync(o => o.NIC == nic, update);

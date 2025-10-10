@@ -26,6 +26,9 @@ namespace Amply.Server.Dtos
         [JsonPropertyName("phone")]
         public string Phone { get; set; } = string.Empty;
 
-      
+        [Required]
+        public string Status { get; set; } = "active";
+
+
     }
 }
